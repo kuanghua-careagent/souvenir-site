@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>台灣股東會紀念品查詢</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, "Microsoft JhengHei", sans-serif; background: #0f172a; color: #e2e8f0; }
+  .header { background: linear-gradient(135deg, #1e293b, #334155); padding: 24px; text-align: center; border-bottom: 3px solid #f59e0b; }
+  .header h1 { font-size: 1.8rem; color: #f59e0b; }
+  .header p { color: #94a3b8; font-size: 0.9rem; margin-top: 6px; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+  .search-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+  .search-bar input { flex: 1; padding: 12px 16px; border-radius: 8px; border: 1px solid #475569; background: #1e293b; color: #e2e8f0; font-size: 1rem; }
+  .search-bar button { padding: 12px 24px; border-radius: 8px; border: none; background: #f59e0b; color: #1e293b; font-weight: bold; cursor: pointer; }
+  .search-bar button:hover { background: #d97706; }
+  table { width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 8px; overflow: hidden; }
+  th { background: #334155; color: #f59e0b; padding: 12px; text-align: left; font-size: 0.85rem; }
+  td { padding: 10px 12px; border-top: 1px solid #2d3748; font-size: 0.9rem; }
+  tr:hover { background: #2d3748; }
+  .gift { color: #4ade80; }
+  .date { color: #fbbf24; white-space: nowrap; }
+  .meta { text-align: center; color: #64748b; font-size: 0.8rem; margin-top: 16px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; margin-right: 4px; }
+  .badge-temp { background: #f59e0b33; color: #f59e0b; }
+  .badge-meet { background: #3b82f633; color: #60a5fa; }
+  .loading { text-align: center; padding: 40px; color: #94a3b8; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>📦 台灣股東會紀念品查詢</h1>
+  <p>資料來源：公開資訊觀測站（MOPS）｜整理觀點參考 twsouvenir.github.io</p>
+</div>
+
+<div class="container">
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="輸入公司代號或名稱，例如：1101 / 台泥">
+    <button onclick="search()">🔍 查詢</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>代號</th>
+        <th>公司</th>
+        <th>紀念品</th>
+        <th>狀態</th>
+        <th>粗估買價</th>
+        <th>最後買進日</th>
+        <th>開會日</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody">
+      <tr><td colspan="7" class="loading">載入資料中...</td></tr>
+    </tbody>
+  </table>
+
+  <div class="meta">
+    資料庫 <span id="count">0</span> 筆公司資料 ｜ 更新時間 <span id="updated">-</span>
+    <br>本網站僅供參考，實際以公開資訊觀測站公告為準
+  </div>
+</div>
+
+<script>
+let DB = null;
+
+async function loadData() {
+  try {
+    const res = await fetch('souvenir_db.json');
+    DB = await res.json();
+    document.getElementById('count').textContent = DB.records.length;
+    document.getElementById('updated').textContent = DB.meta.updated;
+    render(DB.records.slice(0, 50));
+  } catch(e) {
+    document.getElementById('tableBody').innerHTML =
+      '<tr><td colspan="7" class="loading">❌ 資料載入失敗</td></tr>';
+  }
+}
+
+function render(records) {
+  const tbody = document.getElementById('tableBody');
+  if (!records.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="loading">沒有符合的資料</td></tr>';
+    return;
+  }
+  tbody.innerHTML = records.map(r => `
+    <tr>
+      <td><strong>${r.code}</strong></td>
+      <td>${r.name}</td>
+      <td class="gift">${r.gift || '-'}</td>
+      <td><span class="badge badge-temp">${r.gift_status || '-'}</span></td>
+      <td>${r.est_price || '-'}</td>
+      <td class="date">${r.last_buy_date || '-'}</td>
+      <td>${r.meeting_date || '-'}</td>
+    </tr>`).join('');
+}
+
+function search() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  if (!q || !DB) return;
+  const results = DB.records.filter(r =>
+    r.code.toLowerCase().includes(q) || r.name.toLowerCase().includes(q)
+  );
+  render(results.slice(0, 50));
+}
+
+document.getElementById('searchInput').addEventListener('keyup', e => {
+  if (e.key === 'Enter') search();
+});
+
+loadData();
+</script>
+</body>
+</html>
