@@ -97,6 +97,8 @@ let currentTab = 'all';
 let sortKey = null;
 let sortDir = 1;
 let currentRows = [];
+// 每頁獨立狀態：tabKey -> {sortKey, sortDir, query}
+const tabStates = {};
 
 const TABS = [
   {key: 'all', label: '📋 全部', filter: null},
@@ -133,7 +135,21 @@ function buildTabs() {
 }
 
 function switchTab(key) {
+  // 保存目前頁狀態
+  tabStates[currentTab] = {sortKey, sortDir, query: document.getElementById('searchInput').value.trim()};
+  // 切頁
   currentTab = key;
+  // 恢復目標頁狀態
+  const st = tabStates[key] || {sortKey: null, sortDir: 1, query: ''};
+  sortKey = st.sortKey;
+  sortDir = st.sortDir;
+  document.getElementById('searchInput').value = st.query;
+  // 更新箭頭
+  document.querySelectorAll('th .arrow').forEach(a => a.textContent = '');
+  if (sortKey) {
+    const arr = document.getElementById('arr-' + sortKey);
+    if (arr) arr.textContent = sortDir === 1 ? '▲' : '▼';
+  }
   buildTabs();
   refresh();
 }
@@ -166,7 +182,18 @@ function refresh() {
   document.getElementById('stats').innerHTML =
     `<span>📊 顯示 <b>${rows.length}</b> 家公司</span>`;
   if (sortKey) applySort();
-  else renderRows(rows);
+  else {
+    // 套用該頁搜尋詞
+    const q = document.getElementById('searchInput').value.trim().toLowerCase();
+    if (q) {
+      const filtered = rows.filter(r =>
+        r.company.code.toLowerCase().includes(q) || r.company.name.toLowerCase().includes(q)
+      );
+      renderRows(filtered);
+    } else {
+      renderRows(rows);
+    }
+  }
 }
 
 function renderRows(rows) {
@@ -215,7 +242,15 @@ function applySort() {
     const v = {code: r.company.code, name: r.company.name, gift: m.gift, pure: m.pure_start, evote: m.evote_start, evote_docs: m.evote_docs, entrust: m.entrust_start, entrust_loc_1: m.entrust_loc_1, meeting_date: m.meeting_date, meeting_location: m.meeting_location, last_buy_date: m.last_buy_date, agent: m.agent, reelection: m.reelection, zero_lot_mail: m.zero_lot_mail, price: parseFloat(m.est_price) || -1}[sortKey];
     return v === undefined || v === null ? '' : v;
   };
-  const sorted = [...currentRows].sort((a, b) => {
+  // 套用該頁搜尋詞
+  let rows = currentRows;
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  if (q) {
+    rows = rows.filter(r =>
+      r.company.code.toLowerCase().includes(q) || r.company.name.toLowerCase().includes(q)
+    );
+  }
+  const sorted = [...rows].sort((a, b) => {
     const va = val(a), vb = val(b);
     if (va === vb) return 0;
     if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * sortDir;
