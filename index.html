@@ -48,7 +48,7 @@
 <body>
 <div class="header">
   <h1>📦 股東會紀念品查詢</h1>
-  <p>gnepin 定案資料 + 公開資訊觀測站（MOPS）補齊全體公司</p>
+  <p>股東會紀念品查詢系統</p>
 </div>
 
 <div class="container">
@@ -97,8 +97,7 @@
   </div>
 
   <div class="meta">
-    資料庫 <span id="count">0</span> 家公司 ｜ <span id="meetCount">0</span> 場會議 ｜ 更新時間 <span id="updated">-</span>
-    <br>本網站僅供參考，實際以公開資訊觀測站公告為準
+    本網站僅供參考，實際以公開資訊觀測站公告為準
   </div>
 </div>
 
@@ -128,9 +127,6 @@ async function loadData() {
   try {
     const res = await fetch('souvenir_db.json');
     DB = await res.json();
-    document.getElementById('count').textContent = DB.meta.company_count;
-    document.getElementById('meetCount').textContent = DB.meta.meeting_count;
-    document.getElementById('updated').textContent = DB.meta.updated;
     buildTabs();
     refresh();
   } catch(e) {
