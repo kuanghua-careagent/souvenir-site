@@ -10,7 +10,7 @@
   .header { background: linear-gradient(135deg, #1e293b, #334155); padding: 20px; text-align: center; border-bottom: 3px solid #f59e0b; }
   .header h1 { font-size: 1.6rem; color: #f59e0b; }
   .header p { color: #94a3b8; font-size: 0.85rem; margin-top: 4px; }
-  .container { max-width: 560px; margin: 0 auto; padding: 16px; }
+  .container { max-width: 640px; margin: 0 auto; padding: 16px; }
   .nav { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
   .nav a { padding: 8px 16px; border-radius: 8px; border: 1px solid #475569; background: #1e293b; color: #94a3b8; text-decoration: none; font-size: 0.9rem; }
   .nav a:hover { background: #334155; color: #e2e8f0; }
@@ -18,8 +18,8 @@
   .card { background: #1e293b; border-radius: 10px; padding: 22px; border: 1px solid #334155; }
   .card h2 { color: #f59e0b; font-size: 1.15rem; margin-bottom: 16px; text-align: center; }
   label { display: block; color: #94a3b8; font-size: 0.8rem; margin: 10px 0 4px; }
-  input { width: 100%; padding: 11px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #e2e8f0; font-size: 0.95rem; }
-  input:focus { outline: none; border-color: #f59e0b; }
+  input, select { width: 100%; padding: 11px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #e2e8f0; font-size: 0.95rem; }
+  input:focus, select:focus { outline: none; border-color: #f59e0b; }
   .btn { display: block; width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; font-size: 1rem; margin-top: 16px; }
   .btn-primary { background: #f59e0b; color: #1e293b; }
   .btn-primary:hover { background: #d97706; }
@@ -28,12 +28,16 @@
   .msg.err { color: #ef4444; }
   .hint { color: #64748b; font-size: 0.75rem; margin-top: 4px; }
   .footer { text-align: center; color: #64748b; font-size: 0.75rem; margin-top: 16px; }
+  .code-preview { background: #0f172a; border: 1px dashed #f59e0b; border-radius: 8px; padding: 12px; margin-top: 14px; display: none; }
+  .code-preview .cp-title { color: #94a3b8; font-size: 0.75rem; margin-bottom: 6px; }
+  .code-preview .cp-main { color: #f59e0b; font-size: 1.2rem; font-weight: bold; }
+  .code-preview .cp-sub { color: #94a3b8; font-size: 0.8rem; margin-top: 4px; }
 </style>
 </head>
 <body>
 <div class="header">
   <h1>📦 股東會紀念品 — 註冊</h1>
-  <p>建立主帳戶，管理最多 9 個子帳戶的持股與紀念品</p>
+  <p>註冊即自動編碼：主帳號 + 子帳號一併納入會員體系</p>
 </div>
 
 <div class="container">
@@ -46,15 +50,22 @@
   </div>
 
   <div class="card">
-    <h2>📝 建立帳戶</h2>
+    <h2>📝 建立帳戶（自動編碼）</h2>
 
-    <label>帳號（Email）</label>
+    <label>客戶群組</label>
+    <select id="regGroup">
+      <option value="興園群">興園群（編號 L2-XX）</option>
+      <option value="國票群">國票群（編號 L3-XX）</option>
+      <option value="一般客戶">一般客戶（編號 L4-XX）</option>
+    </select>
+    <div class="hint">群組決定證件編號前綴：興園=L2 / 國票=L3 / 一般=L4</div>
+
+    <label>主帳號 Email</label>
     <input type="email" id="regEmail" placeholder="you@example.com">
-    <div class="hint">將作為登入帳號</div>
+    <div class="hint">作為登入帳號</div>
 
     <label>密碼</label>
     <input type="password" id="regPass" placeholder="至少 6 碼">
-    <div class="hint">建議混合英數字</div>
 
     <label>確認密碼</label>
     <input type="password" id="regPass2" placeholder="再輸入一次">
@@ -64,23 +75,71 @@
 
     <label>身分證字號</label>
     <input type="text" id="regId" placeholder="例：A123456789">
-    <div class="hint">用於股東身分驗證</div>
+    <div class="hint">用於股東身分驗證（1 英文字母 + 9 數字）</div>
 
     <label>手機</label>
     <input type="tel" id="regTel" placeholder="0912345678">
 
-    <button class="btn btn-primary" onclick="register()">✅ 註冊</button>
+    <button class="btn btn-primary" onclick="register()">✅ 註冊（自動產生編號）</button>
+
+    <div class="code-preview" id="codePreview">
+      <div class="cp-title">🎉 註冊成功，您的會員編號：</div>
+      <div class="cp-main" id="cpMemberId"></div>
+      <div class="cp-sub" id="cpCertCode"></div>
+      <div class="cp-sub" id="cpGroup"></div>
+    </div>
     <div class="msg" id="regMsg"></div>
   </div>
 
   <div class="footer">
-    註冊後可建立最多 9 個子帳戶，分別記錄不同家人的持股，
-    <br>並篩選「我的持股」與「需要補充」的股東會紀念品。
+    主帳號 = 會員ID（M001…）＋ 證件編號（L2-01…）<br>
+    子帳號 = 同群組證件編號自動遞增（L2-02, L2-03…）
   </div>
 </div>
 
 <script>
+// ═══════════════════════════════════════════════
+// 會員編碼系統 v1.0
+// 主帳號：會員ID（M+3碼流水）+ 證件編號（群組前綴+序號）
+// 子帳號：同群組證件編號自動遞增
+// ═══════════════════════════════════════════════
 const USERS_KEY = 'souvenir_users';
+const GROUP_PREFIX = { '興園群': 'L2', '國票群': 'L3', '一般客戶': 'L4' };
+
+function loadUsers() {
+  try { return JSON.parse(localStorage.getItem(USERS_KEY)) || []; }
+  catch(e) { return []; }
+}
+
+function saveUsers(users) {
+  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+}
+
+/** 取得下一個會員ID（M001, M002...） */
+function nextMemberId(users) {
+  let max = 0;
+  for (const u of users) {
+    const m = (u.memberId || '').match(/^M(\d+)$/);
+    if (m) max = Math.max(max, parseInt(m[1]));
+  }
+  return 'M' + String(max + 1).padStart(3, '0');
+}
+
+/** 取得群組下一個證件編號（L2-01, L2-02...） */
+function nextCertCode(users, group) {
+  const prefix = GROUP_PREFIX[group] || 'L4';
+  let max = 0;
+  // 掃所有使用者（主+子）的證件編號
+  for (const u of users) {
+    const m = (u.certCode || '').match(new RegExp('^' + prefix + '-(\\d+)$'));
+    if (m) max = Math.max(max, parseInt(m[1]));
+    for (const s of (u.subs || [])) {
+      const sm = (s.certCode || '').match(new RegExp('^' + prefix + '-(\\d+)$'));
+      if (sm) max = Math.max(max, parseInt(sm[1]));
+    }
+  }
+  return prefix + '-' + String(max + 1).padStart(2, '0');
+}
 
 function register() {
   const email = document.getElementById('regEmail').value.trim();
@@ -89,6 +148,7 @@ function register() {
   const name = document.getElementById('regName').value.trim();
   const id = document.getElementById('regId').value.trim().toUpperCase();
   const tel = document.getElementById('regTel').value.trim();
+  const group = document.getElementById('regGroup').value;
   const msg = document.getElementById('regMsg');
 
   // 驗證
@@ -109,19 +169,33 @@ function register() {
   }
 
   // 檢查重複
-  let users = [];
-  try { users = JSON.parse(localStorage.getItem(USERS_KEY)) || []; } catch(e) {}
+  const users = loadUsers();
   if (users.some(u => u.email === email)) {
     msg.className = 'msg err'; msg.textContent = '❌ 此 Email 已註冊'; return;
   }
 
-  // 儲存（之後套網站改接後端）
-  users.push({email, pass, name, id, tel, subs: [], createdAt: new Date().toISOString()});
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+  // ═══ 自動編碼 ═══
+  const memberId = nextMemberId(users);          // M001
+  const certCode = nextCertCode(users, group);   // L2-01
+
+  users.push({
+    email, pass, name, id, tel, group,
+    memberId,          // 會員ID：M001
+    certCode,          // 證件編號：L2-01
+    subs: [],          // 子帳號（稍後在帳戶管理新增）
+    createdAt: new Date().toISOString(),
+  });
+  saveUsers(users);
+
+  // 顯示編碼
+  document.getElementById('cpMemberId').textContent = memberId;
+  document.getElementById('cpCertCode').textContent = '證件編號：' + certCode;
+  document.getElementById('cpGroup').textContent = '群組：' + group;
+  document.getElementById('codePreview').style.display = 'block';
 
   msg.className = 'msg ok';
-  msg.textContent = '✅ 註冊成功！請前往帳戶管理建立子帳戶';
-  setTimeout(() => window.location.href = 'account.html', 1200);
+  msg.textContent = '✅ 註冊成功！請前往帳戶管理建立子帳號';
+  setTimeout(() => window.location.href = 'account.html?user=' + email, 1500);
 }
 </script>
 </body>

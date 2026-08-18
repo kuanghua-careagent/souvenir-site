@@ -17,7 +17,6 @@
   .nav a.active { background: #f59e0b; color: #1e293b; font-weight: bold; }
   .card { background: #1e293b; border-radius: 10px; padding: 18px; margin-bottom: 16px; border: 1px solid #334155; }
   .card h2 { color: #f59e0b; font-size: 1.1rem; margin-bottom: 12px; }
-  .card h3 { color: #e2e8f0; font-size: 0.95rem; margin: 12px 0 8px; }
   label { display: block; color: #94a3b8; font-size: 0.8rem; margin: 8px 0 4px; }
   input, select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #e2e8f0; font-size: 0.9rem; margin-bottom: 4px; }
   input:focus, select:focus { outline: none; border-color: #f59e0b; }
@@ -27,35 +26,32 @@
   .btn-red { background: #ef4444; color: #fff; }
   .btn-gray { background: #475569; color: #e2e8f0; }
   .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
-  /* 子帳戶網格 */
   .sub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
   .sub-card { background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 14px; }
   .sub-card .name { font-weight: bold; color: #f59e0b; font-size: 0.95rem; }
-  .sub-card .id { color: #64748b; font-size: 0.75rem; margin: 2px 0 8px; }
+  .sub-card .code { color: #22c55e; font-size: 0.8rem; margin: 2px 0; font-weight: bold; }
+  .sub-card .id { color: #64748b; font-size: 0.75rem; margin-bottom: 8px; }
   .sub-card .count { color: #94a3b8; font-size: 0.8rem; margin-bottom: 8px; }
   .sub-card .actions { display: flex; gap: 6px; }
-  /* 持股表格 */
   table { width: 100%; border-collapse: collapse; background: #0f172a; border-radius: 8px; overflow: hidden; }
   th { background: #334155; color: #f59e0b; padding: 8px; text-align: left; font-size: 0.8rem; }
   td { padding: 8px; border-top: 1px solid #2d3748; font-size: 0.85rem; }
-  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; margin-right: 4px; }
-  .tag-hold { background: #4ade8033; color: #4ade80; }
-  .tag-need { background: #f59e0b33; color: #f59e0b; }
-  .filter-bar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-  .filter-bar .btn { margin: 0; }
-  .filter-bar .btn.active { background: #f59e0b; color: #1e293b; }
-  .stats { color: #94a3b8; font-size: 0.8rem; margin-bottom: 8px; }
-  .hidden { display: none; }
+  .code-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; background: #22c55e33; color: #4ade80; font-weight: bold; }
+  .group-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; background: #f59e0b33; color: #f59e0b; }
   .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 100; }
   .modal-bg.show { display: flex; }
   .modal { background: #1e293b; border-radius: 12px; padding: 24px; width: 90%; max-width: 480px; max-height: 85vh; overflow-y: auto; }
   .modal h2 { color: #f59e0b; margin-bottom: 14px; }
+  .hint { color: #64748b; font-size: 0.75rem; margin-top: 4px; }
+  .member-list { max-height: 400px; overflow-y: auto; }
+  .stats { color: #94a3b8; font-size: 0.85rem; margin-bottom: 10px; }
+  .stats b { color: #f59e0b; }
 </style>
 </head>
 <body>
 <div class="header">
   <h1>📦 股東會紀念品 — 帳戶管理</h1>
-  <p>主帳戶 + 9 子帳戶｜持股篩選｜註冊</p>
+  <p>主帳號 + 子帳號一併編碼｜會員清冊匯出</p>
 </div>
 
 <div class="container">
@@ -70,22 +66,29 @@
   <!-- 主帳戶資訊 -->
   <div class="card">
     <h2>👤 主帳戶</h2>
-    <div style="display:flex; gap:12px; flex-wrap:wrap;">
-      <div style="flex:1; min-width:200px;">
+    <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:10px;">
+      <div style="flex:1; min-width:150px;">
         <label>姓名</label>
-        <input type="text" id="masterName" value="彭光華">
+        <input type="text" id="masterName" placeholder="請先註冊">
       </div>
-      <div style="flex:1; min-width:200px;">
+      <div style="flex:1; min-width:150px;">
         <label>身分證字號</label>
-        <input type="text" id="masterId" value="E121857808">
+        <input type="text" id="masterId" placeholder="請先註冊">
       </div>
-      <div style="flex:1; min-width:200px;">
-        <label>電話</label>
-        <input type="text" id="masterTel" value="0932895357">
+      <div style="flex:1; min-width:150px;">
+        <label>群組</label>
+        <select id="masterGroup">
+          <option value="興園群">興園群</option>
+          <option value="國票群">國票群</option>
+          <option value="一般客戶">一般客戶</option>
+        </select>
       </div>
     </div>
-    <div style="margin-top:12px;">
-      <button class="btn btn-primary" onclick="saveMaster()">💾 儲存主帳戶</button>
+    <div id="masterCodes" style="margin-bottom:10px;"></div>
+    <div style="margin-top:8px;">
+      <button class="btn btn-primary" onclick="saveMaster()">💾 儲存</button>
+      <button class="btn btn-green" onclick="exportRoster()">📊 匯出會員清冊</button>
+      <button class="btn btn-red" onclick="logout()">🚪 登出</button>
       <span id="masterMsg" style="color:#4ade80; font-size:0.85rem; margin-left:8px;"></span>
     </div>
   </div>
@@ -93,33 +96,21 @@
   <!-- 子帳戶列表 -->
   <div class="card">
     <h2>👨‍👩‍👧 子帳戶（<span id="subCount">0</span>/9）</h2>
-    <p style="color:#64748b; font-size:0.8rem; margin-bottom:12px;">每個子帳戶可記錄不同家人的持股，分別篩選「我的持股」與「需要補充」</p>
+    <p style="color:#64748b; font-size:0.8rem; margin-bottom:12px;">子帳號自動編碼：同群組證件編號遞增（L2-02, L2-03...）</p>
     <div class="sub-grid" id="subGrid"></div>
     <div style="margin-top:14px;">
       <button class="btn btn-green" onclick="openSubModal()" id="addSubBtn">➕ 新增子帳戶</button>
-      <span id="subMsg" style="color:#ef4444; font-size:0.85rem; margin-left:8px;"></span>
     </div>
   </div>
 
-  <!-- 持股篩選 -->
+  <!-- 全會員清冊 -->
   <div class="card">
-    <h2>🔍 持股篩選</h2>
-    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
-      <select id="selectSub" style="max-width:250px;" onchange="loadHoldings()">
-        <option value="">— 選擇子帳戶 —</option>
-      </select>
-      <button class="btn btn-primary" onclick="loadHoldings()">📂 載入持股</button>
-    </div>
-    <div class="filter-bar" id="filterBar" style="display:none;">
-      <button class="btn btn-gray active" id="fAll" onclick="setFilter('all')">全部</button>
-      <button class="btn btn-gray" id="fHold" onclick="setFilter('hold')">🟢 我的持股</button>
-      <button class="btn btn-gray" id="fNeed" onclick="setFilter('need')">🟡 需要補充</button>
-    </div>
-    <div class="stats" id="holdStats"></div>
-    <div class="table-wrap" style="overflow-x:auto;">
+    <h2>📋 會員清冊（主帳號 + 子帳號）</h2>
+    <div class="stats" id="rosterStats"></div>
+    <div class="member-list">
       <table>
-        <thead><tr><th>代號</th><th>公司</th><th>紀念品</th><th>開會日</th><th>最後買進日</th><th>狀態</th></tr></thead>
-        <tbody id="holdBody"><tr><td colspan="6" style="text-align:center; color:#64748b;">請先選擇子帳戶</td></tr></tbody>
+        <thead><tr><th>會員ID</th><th>證件編號</th><th>姓名</th><th>證件號碼</th><th>群組</th><th>身分</th></tr></thead>
+        <tbody id="rosterBody"><tr><td colspan="6" style="text-align:center; color:#64748b;">請先註冊 / 登入</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -130,11 +121,20 @@
   <div class="modal">
     <h2 id="subModalTitle">➕ 新增子帳戶</h2>
     <label>顯示名稱</label>
-    <input type="text" id="subName" placeholder="例：自己 / 太太 / 爸爸">
+    <input type="text" id="subName" placeholder="例：太太 / 女兒 / 父親">
     <label>身分證字號</label>
     <input type="text" id="subId" placeholder="例：A123456789">
-    <label>持股清單（用逗號分隔股票代號）</label>
-    <input type="text" id="subHoldings" placeholder="例：1101,2330,0050,00685L">
+    <label>證件類型</label>
+    <select id="subDocType">
+      <option value="身分證">身分證</option>
+      <option value="健保卡">健保卡</option>
+      <option value="駕照">駕照</option>
+      <option value="戶口名簿">戶口名簿</option>
+      <option value="戶籍謄本">戶籍謄本</option>
+    </select>
+    <label>持股清單（逗號分隔股票代號）</label>
+    <input type="text" id="subHoldings" placeholder="例：1101,2330,0050">
+    <div class="hint" id="subCodeHint" style="color:#22c55e; margin-top:8px;"></div>
     <div style="margin-top:16px; text-align:right;">
       <button class="btn btn-gray" onclick="closeSubModal()">取消</button>
       <button class="btn btn-green" onclick="saveSub()">✅ 儲存</button>
@@ -144,78 +144,141 @@
 </div>
 
 <script>
-// ===== 資料模型：存 localStorage（之後套網站時改接後端） =====
-const STORAGE_KEY = 'souvenir_accounts';
+// ═══════════════════════════════════════════════
+// 會員編碼系統 v1.0 — 帳戶管理
+// ═══════════════════════════════════════════════
+const USERS_KEY = 'souvenir_users';
+const GROUP_PREFIX = { '興園群': 'L2', '國票群': 'L3', '一般客戶': 'L4' };
 
-function loadAccounts() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  return raw ? JSON.parse(raw) : {master: {}, subs: []};
+let currentUser = null;
+
+function loadUsers() {
+  try { return JSON.parse(localStorage.getItem(USERS_KEY)) || []; }
+  catch(e) { return []; }
+}
+function saveUsers(users) { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+
+function getCurrentUser() {
+  const users = loadUsers();
+  // URL 參數優先（註冊後跳轉）
+  const params = new URLSearchParams(window.location.search);
+  const email = params.get('user');
+  if (email) return users.find(u => u.email === email) || users[0] || null;
+  // 否則取最後登入/註冊的
+  return users[users.length - 1] || null;
 }
 
-function saveAccounts(acc) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(acc));
+/** 群組下一個證件編號 */
+function nextCertCode(users, group, excludeUser) {
+  const prefix = GROUP_PREFIX[group] || 'L4';
+  let max = 0;
+  for (const u of users) {
+    if (excludeUser && u.email === excludeUser.email) continue;
+    const m = (u.certCode || '').match(new RegExp('^' + prefix + '-(\\d+)$'));
+    if (m) max = Math.max(max, parseInt(m[1]));
+    for (const s of (u.subs || [])) {
+      const sm = (s.certCode || '').match(new RegExp('^' + prefix + '-(\\d+)$'));
+      if (sm) max = Math.max(max, parseInt(sm[1]));
+    }
+  }
+  return prefix + '-' + String(max + 1).padStart(2, '0');
 }
 
-// ===== 主帳戶 =====
+// ── 主帳戶 ──
+function loadMaster() {
+  currentUser = getCurrentUser();
+  if (!currentUser) {
+    document.getElementById('masterName').placeholder = '請先註冊';
+    return;
+  }
+  document.getElementById('masterName').value = currentUser.name || '';
+  document.getElementById('masterId').value = currentUser.id || '';
+  document.getElementById('masterGroup').value = currentUser.group || '興園群';
+
+  const codes = document.getElementById('masterCodes');
+  codes.innerHTML =
+    `<span class="code-badge">${currentUser.memberId || 'M---'}</span> ` +
+    `<span class="code-badge">${currentUser.certCode || 'L2-XX'}</span> ` +
+    `<span class="group-badge">${currentUser.group || ''}</span>`;
+  renderSubs();
+  renderRoster();
+}
+
 function saveMaster() {
-  const acc = loadAccounts();
-  acc.master = {
-    name: document.getElementById('masterName').value,
-    id: document.getElementById('masterId').value,
-    tel: document.getElementById('masterTel').value,
-  };
-  saveAccounts(acc);
+  if (!currentUser) { alert('請先註冊'); return; }
+  const users = loadUsers();
+  const u = users.find(x => x.email === currentUser.email);
+  if (!u) return;
+  const oldGroup = u.group;
+  u.name = document.getElementById('masterName').value.trim();
+  u.id = document.getElementById('masterId').value.trim().toUpperCase();
+  u.group = document.getElementById('masterGroup').value;
+  // 群組變更 → 重新編碼
+  if (oldGroup !== u.group) {
+    u.certCode = nextCertCode(users, u.group, u);
+  }
+  saveUsers(users);
   const msg = document.getElementById('masterMsg');
   msg.textContent = '✅ 已儲存';
   setTimeout(() => msg.textContent = '', 2000);
+  loadMaster();
 }
 
-// ===== 子帳戶 =====
-function renderSubs() {
-  const acc = loadAccounts();
-  const grid = document.getElementById('subGrid');
-  const count = document.getElementById('subCount');
-  count.textContent = acc.subs.length;
-
-  if (acc.subs.length >= 9) {
-    document.getElementById('addSubBtn').style.display = 'none';
-  } else {
-    document.getElementById('addSubBtn').style.display = '';
+function logout() {
+  if (confirm('確定登出？')) {
+    window.location.href = 'index.html';
   }
+}
 
-  grid.innerHTML = acc.subs.map((s, i) => `
+// ── 子帳戶 ──
+function renderSubs() {
+  const grid = document.getElementById('subGrid');
+  if (!currentUser) {
+    grid.innerHTML = '<p style="color:#64748b;">請先註冊主帳號</p>';
+    document.getElementById('subCount').textContent = '0';
+    return;
+  }
+  const subs = currentUser.subs || [];
+  document.getElementById('subCount').textContent = subs.length;
+
+  document.getElementById('addSubBtn').style.display = subs.length >= 9 ? 'none' : '';
+
+  grid.innerHTML = subs.map((s, i) => `
     <div class="sub-card">
       <div class="name">${s.name || '未命名'}</div>
-      <div class="id">${s.id || '無身分證'}</div>
+      <div class="code">${s.certCode || 'L2-XX'}</div>
+      <div class="id">${s.id || '無身分證'}（${s.docType || ''}）</div>
       <div class="count">📈 持股 ${(s.holdings || []).length} 檔</div>
       <div class="actions">
-        <button class="btn btn-sm btn-primary" onclick="selectSub(${i})">📂 看持股</button>
-        <button class="btn btn-sm btn-gray" onclick="openSubModal(${i})">✏️</button>
+        <button class="btn btn-sm btn-primary" onclick="openSubModal(${i})">✏️ 編輯</button>
         <button class="btn btn-sm btn-red" onclick="delSub(${i})">🗑️</button>
       </div>
     </div>`).join('') || '<p style="color:#64748b;">尚未建立子帳戶</p>';
-
-  // 更新 select
-  const sel = document.getElementById('selectSub');
-  sel.innerHTML = '<option value="">— 選擇子帳戶 —</option>' +
-    acc.subs.map((s, i) => `<option value="${i}">${s.name || '未命名'}（${s.id || ''}）</option>`).join('');
 }
 
 function openSubModal(index = -1) {
+  if (!currentUser) { alert('請先註冊主帳號'); return; }
   document.getElementById('editIndex').value = index;
   document.getElementById('subModalTitle').textContent = index >= 0 ? '✏️ 編輯子帳戶' : '➕ 新增子帳戶';
   document.getElementById('subName').value = '';
   document.getElementById('subId').value = '';
+  document.getElementById('subDocType').value = '身分證';
   document.getElementById('subHoldings').value = '';
 
   if (index >= 0) {
-    const acc = loadAccounts();
-    const s = acc.subs[index];
+    const s = currentUser.subs[index];
     if (s) {
       document.getElementById('subName').value = s.name || '';
       document.getElementById('subId').value = s.id || '';
+      document.getElementById('subDocType').value = s.docType || '身分證';
       document.getElementById('subHoldings').value = (s.holdings || []).join(',');
+      document.getElementById('subCodeHint').textContent = '證件編號：' + (s.certCode || '');
     }
+  } else {
+    // 預覽下一個編號
+    const users = loadUsers();
+    const next = nextCertCode(users, currentUser.group, currentUser);
+    document.getElementById('subCodeHint').textContent = '將自動編號：' + next;
   }
   document.getElementById('subModal').classList.add('show');
 }
@@ -225,110 +288,96 @@ function closeSubModal() {
 }
 
 function saveSub() {
-  const acc = loadAccounts();
+  if (!currentUser) return;
+  const users = loadUsers();
+  const u = users.find(x => x.email === currentUser.email);
+  if (!u) return;
+
   const idx = parseInt(document.getElementById('editIndex').value);
   const name = document.getElementById('subName').value.trim();
-  const id = document.getElementById('subId').value.trim();
+  const id = document.getElementById('subId').value.trim().toUpperCase();
+  const docType = document.getElementById('subDocType').value;
   const holdings = document.getElementById('subHoldings').value
     .split(/[,，\s]+/).map(x => x.trim()).filter(Boolean);
 
   if (!name) { alert('請輸入名稱'); return; }
 
-  const data = {name, id, holdings};
   if (idx >= 0) {
-    acc.subs[idx] = data;
+    u.subs[idx] = {...u.subs[idx], name, id, docType, holdings};
   } else {
-    if (acc.subs.length >= 9) { alert('最多 9 個子帳戶'); return; }
-    acc.subs.push(data);
+    if (u.subs.length >= 9) { alert('最多 9 個子帳戶'); return; }
+    const certCode = nextCertCode(users, u.group, u);
+    u.subs.push({name, id, docType, holdings, certCode});
   }
-  saveAccounts(acc);
+  saveUsers(users);
   closeSubModal();
-  renderSubs();
+  loadMaster();
 }
 
 function delSub(index) {
-  if (!confirm('確定刪除這個子帳戶？')) return;
-  const acc = loadAccounts();
-  acc.subs.splice(index, 1);
-  saveAccounts(acc);
-  renderSubs();
+  if (!confirm('確定刪除？')) return;
+  const users = loadUsers();
+  const u = users.find(x => x.email === currentUser.email);
+  if (!u) return;
+  u.subs.splice(index, 1);
+  saveUsers(users);
+  loadMaster();
 }
 
-function selectSub(index) {
-  document.getElementById('selectSub').value = index;
-  loadHoldings();
-  document.getElementById('filterBar').style.display = '';
-}
+// ── 會員清冊 ──
+function renderRoster() {
+  const tbody = document.getElementById('rosterBody');
+  const stats = document.getElementById('rosterStats');
+  if (!currentUser) return;
+  const users = loadUsers();
 
-// ===== 持股篩選 =====
-let currentFilter = 'all';
-let currentSubIndex = -1;
-let holdingsData = [];
-
-function setFilter(f) {
-  currentFilter = f;
-  document.querySelectorAll('#filterBar .btn').forEach(b => b.classList.remove('active'));
-  document.getElementById(f === 'all' ? 'fAll' : f === 'hold' ? 'fHold' : 'fNeed').classList.add('active');
-  renderHoldings();
-}
-
-async function loadHoldings() {
-  const idx = parseInt(document.getElementById('selectSub').value);
-  if (isNaN(idx)) { alert('請選擇子帳戶'); return; }
-  currentSubIndex = idx;
-  document.getElementById('filterBar').style.display = '';
-  setFilter('all');
-
-  const acc = loadAccounts();
-  const sub = acc.subs[idx];
-  const codes = (sub.holdings || []).map(c => String(c).trim());
-
-  // 載入資料庫
-  const res = await fetch('souvenir_db.json');
-  const db = await res.json();
-
-  // 子帳戶持股
-  const held = new Set(codes);
-  const heldCompanies = db.companies.filter(c => held.has(c.code));
-
-  // 需要補充：未持有 + 2026 有會議（未過最後買進日優先）
-  const needCompanies = db.companies.filter(c => !held.has(c.code));
-
-  holdingsData = {
-    all: db.companies,
-    hold: heldCompanies,
-    need: needCompanies,
-  };
-  document.getElementById('holdStats').textContent =
-    `子帳戶 ${sub.name || ''}：全部 ${db.companies.length} 家｜🟢 持有 ${heldCompanies.length} 家｜🟡 可補充 ${needCompanies.length} 家`;
-  renderHoldings();
-}
-
-function renderHoldings() {
-  const rows = holdingsData[currentFilter] || [];
-  const tbody = document.getElementById('holdBody');
-  if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#64748b;">無資料</td></tr>';
-    return;
+  let rows = [];
+  for (const u of users) {
+    rows.push({id: u.memberId, code: u.certCode, name: u.name, cert: u.id, group: u.group, role: '主帳號'});
+    for (const s of (u.subs || [])) {
+      rows.push({id: '', code: s.certCode, name: s.name, cert: s.id, group: u.group, role: '子帳號'});
+    }
   }
-  tbody.innerHTML = rows.slice(0, 300).map(c => {
-    const m = c.meetings[c.meetings.length - 1] || {};
-    const tag = currentFilter === 'hold'
-      ? '<span class="tag tag-hold">持有</span>'
-      : currentFilter === 'need' ? '<span class="tag tag-need">補充</span>' : '';
-    return `<tr>
-      <td><strong>${c.code}</strong></td>
-      <td>${c.name}</td>
-      <td style="color:#4ade80;">${m.gift || '-'}</td>
-      <td>${m.meeting_date || '-'}</td>
-      <td>${m.last_buy_date || '-'}</td>
-      <td>${tag}</td>
-    </tr>`;
-  }).join('');
+  rows.sort((a, b) => (a.code || '').localeCompare(b.code || ''));
+
+  stats.innerHTML = `📊 全體會員 <b>${rows.length}</b> 位（主帳號 ${users.length} + 子帳號 ${rows.length - users.length}）`;
+
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td>${r.id || '-'}</td>
+      <td><span class="code-badge">${r.code || '-'}</span></td>
+      <td>${r.name || '-'}</td>
+      <td>${r.cert || '-'}</td>
+      <td><span class="group-badge">${r.group || '-'}</span></td>
+      <td>${r.role}</td>
+    </tr>`).join('');
 }
 
-// ===== 初始化 =====
-renderSubs();
+/** 匯出會員清冊 CSV（格式同 名冊.csv） */
+function exportRoster() {
+  if (!currentUser) { alert('請先註冊'); return; }
+  const users = loadUsers();
+  const rows = [['姓名', '身分證號', '會員編號', '身分別']];
+
+  for (const u of users) {
+    rows.push([u.name, u.id, u.certCode, '正身']);
+    for (const s of (u.subs || [])) {
+      rows.push([s.name, s.id, s.certCode, s.docType === '身分證' ? '正身' : '正文']);
+    }
+  }
+
+  const csv = '\ufeff' + rows.map(r => r.map(v => `"${(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '名冊.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── 初始化 ──
+loadMaster();
 </script>
 </body>
 </html>
