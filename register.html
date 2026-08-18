@@ -202,6 +202,9 @@ function register() {
   });
   saveUsers(users);
 
+  // ═══ 自動登入（建立 session）═══
+  localStorage.setItem(SESSION_KEY, email);
+
   // 顯示編碼
   document.getElementById('cpMemberId').textContent = memberId;
   document.getElementById('cpCertCode').textContent = '證件編號：' + certCode;
