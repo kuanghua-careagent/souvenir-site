@@ -59,5 +59,20 @@ function logout() {
   window.location.href = 'index.html';
 }
 
+// ═══ 一鍵重置：開 ?reset=1 清除所有本機資料 ═══
+function handleReset() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('reset') === '1') {
+    localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(USERS_KEY);
+    alert('✅ 所有資料已清除，請重新註冊');
+    // 清除網址參數，避免重整又觸發
+    window.location.href = window.location.pathname;
+  }
+}
+
 // 頁面載入時自動套用導覽權限
-document.addEventListener('DOMContentLoaded', applyAuthNav);
+document.addEventListener('DOMContentLoaded', () => {
+  handleReset();
+  applyAuthNav();
+});
