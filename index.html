@@ -7,38 +7,47 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, "Microsoft JhengHei", sans-serif; background: #0f172a; color: #e2e8f0; }
-  .header { background: linear-gradient(135deg, #1e293b, #334155); padding: 24px; text-align: center; border-bottom: 3px solid #f59e0b; }
-  .header h1 { font-size: 1.8rem; color: #f59e0b; }
-  .header p { color: #94a3b8; font-size: 0.9rem; margin-top: 6px; }
-  .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-  .search-bar { display: flex; gap: 10px; margin-bottom: 20px; }
-  .search-bar input { flex: 1; padding: 12px 16px; border-radius: 8px; border: 1px solid #475569; background: #1e293b; color: #e2e8f0; font-size: 1rem; }
-  .search-bar button { padding: 12px 24px; border-radius: 8px; border: none; background: #f59e0b; color: #1e293b; font-weight: bold; cursor: pointer; }
-  .search-bar button:hover { background: #d97706; }
-  table { width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 8px; overflow: hidden; }
-  th { background: #334155; color: #f59e0b; padding: 10px 8px; text-align: left; font-size: 0.8rem; white-space: nowrap; }
-  td { padding: 8px; border-top: 1px solid #2d3748; font-size: 0.82rem; }
+  .header { background: linear-gradient(135deg, #1e293b, #334155); padding: 20px; text-align: center; border-bottom: 3px solid #f59e0b; }
+  .header h1 { font-size: 1.6rem; color: #f59e0b; }
+  .header p { color: #94a3b8; font-size: 0.85rem; margin-top: 4px; }
+  .container { max-width: 1400px; margin: 0 auto; padding: 16px; }
+  /* 分頁選單 */
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .tab { padding: 8px 16px; border-radius: 8px; border: 1px solid #475569; background: #1e293b; color: #94a3b8; cursor: pointer; font-size: 0.9rem; }
+  .tab:hover { background: #334155; color: #e2e8f0; }
+  .tab.active { background: #f59e0b; color: #1e293b; font-weight: bold; border-color: #f59e0b; }
+  .tab .cnt { opacity: 0.7; font-size: 0.75rem; }
+  .search-bar { display: flex; gap: 10px; margin-bottom: 14px; }
+  .search-bar input { flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid #475569; background: #1e293b; color: #e2e8f0; font-size: 0.95rem; }
+  .search-bar button { padding: 10px 20px; border-radius: 8px; border: none; background: #f59e0b; color: #1e293b; font-weight: bold; cursor: pointer; }
+  .table-wrap { overflow-x: auto; background: #1e293b; border-radius: 8px; }
+  table { width: 100%; border-collapse: collapse; min-width: 1100px; }
+  th { background: #334155; color: #f59e0b; padding: 8px 6px; text-align: center; font-size: 0.75rem; white-space: nowrap; position: sticky; top: 0; }
+  td { padding: 6px; border-top: 1px solid #2d3748; font-size: 0.78rem; text-align: center; }
   tr:hover { background: #2d3748; }
   .gift { color: #4ade80; }
   .date { color: #fbbf24; white-space: nowrap; }
-  .meta { text-align: center; color: #64748b; font-size: 0.8rem; margin-top: 16px; }
+  .sub { color: #94a3b8; font-size: 0.72rem; }
+  .meta { text-align: center; color: #64748b; font-size: 0.78rem; margin-top: 14px; }
   .badge { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 0.7rem; }
   .badge-y { background: #f59e0b33; color: #f59e0b; }
   .badge-k { background: #3b82f633; color: #60a5fa; }
-  .badge-st { background: #4ade8033; color: #4ade80; }
+  .badge-src { background: #4ade8033; color: #4ade80; }
+  .badge-mops { background: #8b5cf633; color: #a78bfa; }
   .loading { text-align: center; padding: 40px; color: #94a3b8; }
-  .meeting-sub { color: #94a3b8; font-size: 0.75rem; }
-  .stats { display: flex; gap: 20px; justify-content: center; margin-bottom: 16px; color: #94a3b8; font-size: 0.85rem; flex-wrap: wrap; }
+  .stats { text-align: center; color: #94a3b8; font-size: 0.85rem; margin-bottom: 10px; }
   .stats b { color: #f59e0b; }
 </style>
 </head>
 <body>
 <div class="header">
   <h1>📦 股東會紀念品查詢</h1>
-  <p>資料來源：公開資訊觀測站（MOPS）+ gnepin 會員資料｜整理觀點參考 twsouvenir.github.io</p>
+  <p>gnepin 定案資料 + 公開資訊觀測站（MOPS）補齊全體公司</p>
 </div>
 
 <div class="container">
+  <div class="tabs" id="tabs"></div>
+
   <div class="search-bar">
     <input type="text" id="searchInput" placeholder="輸入公司代號或名稱，例如：1101 / 台泥 / 台積電">
     <button onclick="search()">🔍 查詢</button>
@@ -46,25 +55,34 @@
 
   <div class="stats" id="stats"></div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>代號</th>
-        <th>公司</th>
-        <th>年度/種類</th>
-        <th>開會日</th>
-        <th>最後買進日</th>
-        <th>紀念品</th>
-        <th>電投領取</th>
-        <th>委發領取</th>
-        <th>股代</th>
-        <th>預估股價</th>
-      </tr>
-    </thead>
-    <tbody id="tableBody">
-      <tr><td colspan="10" class="loading">載入資料中...</td></tr>
-    </tbody>
-  </table>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>代號</th>
+          <th>公司</th>
+          <th>紀念品</th>
+          <th>狀態</th>
+          <th>純發領取</th>
+          <th>電投領取</th>
+          <th>電投文件</th>
+          <th>委發領取</th>
+          <th>委發(千股)</th>
+          <th>開會日</th>
+          <th>開會地</th>
+          <th>最後買進日</th>
+          <th>股代</th>
+          <th>改選</th>
+          <th>零股寄單</th>
+          <th>股價</th>
+          <th>來源</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <tr><td colspan="17" class="loading">載入資料中...</td></tr>
+      </tbody>
+    </table>
+  </div>
 
   <div class="meta">
     資料庫 <span id="count">0</span> 家公司 ｜ <span id="meetCount">0</span> 場會議 ｜ 更新時間 <span id="updated">-</span>
@@ -74,6 +92,15 @@
 
 <script>
 let DB = null;
+let currentTab = 'all';
+
+const TABS = [
+  {key: 'all', label: '📋 全部', filter: null},
+  {key: '2025常會', label: '2025 常會', filter: m => m.year == '2025' && m.kind == '常會'},
+  {key: '2025臨時會', label: '2025 臨時會', filter: m => m.year == '2025' && m.kind == '臨時會'},
+  {key: '2026常會', label: '2026 常會', filter: m => m.year == '2026' && m.kind == '常會'},
+  {key: '2026臨時會', label: '2026 臨時會', filter: m => m.year == '2026' && m.kind == '臨時會'},
+];
 
 async function loadData() {
   try {
@@ -82,38 +109,79 @@ async function loadData() {
     document.getElementById('count').textContent = DB.meta.company_count;
     document.getElementById('meetCount').textContent = DB.meta.meeting_count;
     document.getElementById('updated').textContent = DB.meta.updated;
-    document.getElementById('stats').innerHTML =
-      `<span>📊 公司 <b>${DB.meta.company_count}</b> 家</span>` +
-      `<span>🗓️ 會議 <b>${DB.meta.meeting_count}</b> 場</span>` +
-      `<span>📅 資料源 <b>MOPS + gnepin</b></span>`;
-    render(DB.companies.slice(0, 40));
+    buildTabs();
+    render();
   } catch(e) {
     document.getElementById('tableBody').innerHTML =
-      '<tr><td colspan="10" class="loading">❌ 資料載入失敗</td></tr>';
+      '<tr><td colspan="17" class="loading">❌ 資料載入失敗</td></tr>';
   }
 }
 
-function render(companies) {
+function buildTabs() {
+  const tabsEl = document.getElementById('tabs');
+  tabsEl.innerHTML = TABS.map(t => {
+    let cnt = '';
+    if (t.key !== 'all' && DB.meta.page_stats) {
+      cnt = DB.meta.page_stats[t.key] || 0;
+    }
+    return `<div class="tab ${t.key === currentTab ? 'active' : ''}" onclick="switchTab('${t.key}')">${t.label} <span class="cnt">${cnt ? '(' + cnt + ')' : ''}</span></div>`;
+  }).join('');
+}
+
+function switchTab(key) {
+  currentTab = key;
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  buildTabs();
+  render();
+}
+
+function getFiltered() {
+  const tab = TABS.find(t => t.key === currentTab);
+  if (!tab || !tab.filter) return DB.companies;
+  // 每家公司找符合該頁的會議
+  return DB.companies.filter(c => c.meetings.some(tab.filter));
+}
+
+function render() {
+  const tab = TABS.find(t => t.key === currentTab);
+  const companies = getFiltered();
+  document.getElementById('stats').innerHTML =
+    `<span>📊 顯示 <b>${companies.length}</b> 家公司</span>` +
+    (tab && tab.filter ? `<span>📅 ${tab.label}</span>` : `<span>📅 全部年度</span>`);
+
   const tbody = document.getElementById('tableBody');
   if (!companies.length) {
-    tbody.innerHTML = '<tr><td colspan="10" class="loading">沒有符合的資料</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="17" class="loading">沒有符合的資料</td></tr>';
     return;
   }
-  tbody.innerHTML = companies.map(c => {
-    // 顯示最近的會議（預設最後一場）
-    const m = c.meetings[c.meetings.length - 1] || {};
+  tbody.innerHTML = companies.slice(0, 200).map(c => {
+    // 找該頁符合的會議（全部頁顯示最近一場）
+    let m;
+    if (tab && tab.filter) {
+      m = c.meetings.find(tab.filter) || c.meetings[c.meetings.length - 1];
+    } else {
+      m = c.meetings[c.meetings.length - 1] || {};
+    }
+    const src = m.source === 'gnepin' ? '<span class="badge badge-src">定案</span>' : '<span class="badge badge-mops">MOPS</span>';
     return `
     <tr>
       <td><strong>${c.code}</strong></td>
       <td>${c.name}</td>
-      <td><span class="badge badge-y">${m.year || '-'}</span> <span class="badge badge-k">${m.kind || '-'}</span></td>
-      <td class="date">${m.meeting_date || '-'}</td>
-      <td class="date">${m.last_buy_date || '-'}</td>
       <td class="gift">${m.gift || '-'}</td>
-      <td class="meeting-sub">${m.evote_start ? m.evote_start + '~' + m.evote_end : '-'}<br>${m.evote_location || ''}</td>
-      <td class="meeting-sub">${m.entrust_start ? m.entrust_start + '~' + m.entrust_end : '-'}<br>${m.entrust_loc_1k || ''}</td>
-      <td class="meeting-sub">${m.agent || '-'}<br>${m.agent_phone || ''}</td>
+      <td><span class="badge badge-y">${m.gift_status || '-'}</span></td>
+      <td class="date">${m.pure_start ? m.pure_start + '~' + m.pure_end : '-'}</td>
+      <td class="date">${m.evote_start ? m.evote_start + '~' + m.evote_end : '-'}<br><span class="sub">${m.evote_location || ''}</span></td>
+      <td class="sub">${m.evote_docs || '-'}</td>
+      <td class="date">${m.entrust_start ? m.entrust_start + '~' + m.entrust_end : '-'}</td>
+      <td class="sub">${m.entrust_loc_1k || '-'}</td>
+      <td class="date">${m.meeting_date || '-'}</td>
+      <td class="sub">${m.meeting_location || '-'}</td>
+      <td class="date">${m.last_buy_date || '-'}</td>
+      <td class="sub">${m.agent || '-'}<br>${m.agent_phone || ''}</td>
+      <td>${m.reelection || '-'}</td>
+      <td>${m.zero_lot_mail || '-'}</td>
       <td>${m.est_price || '-'}</td>
+      <td>${src}</td>
     </tr>`;
   }).join('');
 }
@@ -121,10 +189,45 @@ function render(companies) {
 function search() {
   const q = document.getElementById('searchInput').value.trim().toLowerCase();
   if (!q || !DB) return;
-  const results = DB.companies.filter(c =>
+  const all = getFiltered();
+  const results = all.filter(c =>
     c.code.toLowerCase().includes(q) || c.name.toLowerCase().includes(q)
   );
-  render(results.slice(0, 40));
+  const tbody = document.getElementById('tableBody');
+  if (!results.length) {
+    tbody.innerHTML = '<tr><td colspan="17" class="loading">沒有符合的資料</td></tr>';
+    return;
+  }
+  const tab = TABS.find(t => t.key === currentTab);
+  tbody.innerHTML = results.slice(0, 200).map(c => {
+    let m;
+    if (tab && tab.filter) {
+      m = c.meetings.find(tab.filter) || c.meetings[c.meetings.length - 1];
+    } else {
+      m = c.meetings[c.meetings.length - 1] || {};
+    }
+    const src = m.source === 'gnepin' ? '<span class="badge badge-src">定案</span>' : '<span class="badge badge-mops">MOPS</span>';
+    return `
+    <tr>
+      <td><strong>${c.code}</strong></td>
+      <td>${c.name}</td>
+      <td class="gift">${m.gift || '-'}</td>
+      <td><span class="badge badge-y">${m.gift_status || '-'}</span></td>
+      <td class="date">${m.pure_start ? m.pure_start + '~' + m.pure_end : '-'}</td>
+      <td class="date">${m.evote_start ? m.evote_start + '~' + m.evote_end : '-'}<br><span class="sub">${m.evote_location || ''}</span></td>
+      <td class="sub">${m.evote_docs || '-'}</td>
+      <td class="date">${m.entrust_start ? m.entrust_start + '~' + m.entrust_end : '-'}</td>
+      <td class="sub">${m.entrust_loc_1k || '-'}</td>
+      <td class="date">${m.meeting_date || '-'}</td>
+      <td class="sub">${m.meeting_location || '-'}</td>
+      <td class="date">${m.last_buy_date || '-'}</td>
+      <td class="sub">${m.agent || '-'}<br>${m.agent_phone || ''}</td>
+      <td>${m.reelection || '-'}</td>
+      <td>${m.zero_lot_mail || '-'}</td>
+      <td>${m.est_price || '-'}</td>
+      <td>${src}</td>
+    </tr>`;
+  }).join('');
 }
 
 document.getElementById('searchInput').addEventListener('keyup', e => {
