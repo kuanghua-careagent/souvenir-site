@@ -275,9 +275,9 @@ function openSubModal(index = -1) {
       document.getElementById('subCodeHint').textContent = '證件編號：' + (s.certCode || '');
     }
   } else {
-    // 預覽下一個編號
+    // 預覽下一個編號（不排除主帳號 → L2-02 起）
     const users = loadUsers();
-    const next = nextCertCode(users, currentUser.group, currentUser);
+    const next = nextCertCode(users, currentUser.group);
     document.getElementById('subCodeHint').textContent = '將自動編號：' + next;
   }
   document.getElementById('subModal').classList.add('show');
@@ -306,7 +306,8 @@ function saveSub() {
     u.subs[idx] = {...u.subs[idx], name, id, docType, holdings};
   } else {
     if (u.subs.length >= 9) { alert('最多 9 個子帳戶'); return; }
-    const certCode = nextCertCode(users, u.group, u);
+    // 不排除主帳號 → 主帳號 L2-01 + 子帳號從 L2-02 起
+    const certCode = nextCertCode(users, u.group);
     u.subs.push({name, id, docType, holdings, certCode});
   }
   saveUsers(users);
