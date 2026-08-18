@@ -67,7 +67,7 @@
           <th>電投領取</th>
           <th>電投文件</th>
           <th>委發領取</th>
-          <th>委發(千股)</th>
+          <th>委發(1股)</th>
           <th>開會日</th>
           <th>開會地</th>
           <th>最後買進日</th>
@@ -173,7 +173,7 @@ function render() {
       <td class="date">${m.evote_start ? m.evote_start + '~' + m.evote_end : '-'}<br><span class="sub">${m.evote_location || ''}</span></td>
       <td class="sub">${m.evote_docs || '-'}</td>
       <td class="date">${m.entrust_start ? m.entrust_start + '~' + m.entrust_end : '-'}</td>
-      <td class="sub">${m.entrust_loc_1k || '-'}</td>
+      <td class="sub">${m.entrust_loc_1 || '-'}</td>
       <td class="date">${m.meeting_date || '-'}</td>
       <td class="sub">${m.meeting_location || '-'}</td>
       <td class="date">${m.last_buy_date || '-'}</td>
@@ -217,7 +217,7 @@ function search() {
       <td class="date">${m.evote_start ? m.evote_start + '~' + m.evote_end : '-'}<br><span class="sub">${m.evote_location || ''}</span></td>
       <td class="sub">${m.evote_docs || '-'}</td>
       <td class="date">${m.entrust_start ? m.entrust_start + '~' + m.entrust_end : '-'}</td>
-      <td class="sub">${m.entrust_loc_1k || '-'}</td>
+      <td class="sub">${m.entrust_loc_1 || '-'}</td>
       <td class="date">${m.meeting_date || '-'}</td>
       <td class="sub">${m.meeting_location || '-'}</td>
       <td class="date">${m.last_buy_date || '-'}</td>
