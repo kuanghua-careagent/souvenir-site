@@ -87,8 +87,6 @@
           <th onclick="sortBy('meeting_location')">開會地<span class="arrow" id="arr-meeting_location"></span><span class="sort-hint">↕</span></th>
           <th onclick="sortBy('last_buy_date')">最後買進日<span class="arrow" id="arr-last_buy_date"></span><span class="sort-hint">↕</span></th>
           <th onclick="sortBy('agent')">股代<span class="arrow" id="arr-agent"></span><span class="sort-hint">↕</span></th>
-          <th onclick="sortBy('reelection')">改選<span class="arrow" id="arr-reelection"></span><span class="sort-hint">↕</span></th>
-          <th onclick="sortBy('zero_lot_mail')">零股寄單<span class="arrow" id="arr-zero_lot_mail"></span><span class="sort-hint">↕</span></th>
           <th onclick="sortBy('price')">股價<span class="arrow" id="arr-price"></span><span class="sort-hint">↕</span></th>
         </tr>
       </thead>
@@ -217,7 +215,7 @@ function refresh() {
 function renderRows(rows) {
   const tbody = document.getElementById('tableBody');
   if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="15" class="loading">沒有符合的資料</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="13" class="loading">沒有符合的資料</td></tr>';
     return;
   }
   tbody.innerHTML = rows.slice(0, 500).map(r => {
@@ -236,8 +234,6 @@ function renderRows(rows) {
       <td class="sub">${m.meeting_location || '-'}</td>
       <td class="date">${m.last_buy_date || '-'}</td>
       <td class="sub">${m.agent || '-'}<br>${m.agent_phone || ''}</td>
-      <td>${m.reelection || '-'}</td>
-      <td>${m.zero_lot_mail || '-'}</td>
       <td>${m.est_price || '-'}</td>
     </tr>`;
   }).join('');
