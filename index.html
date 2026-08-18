@@ -11,18 +11,21 @@
   .header h1 { font-size: 1.6rem; color: #f59e0b; }
   .header p { color: #94a3b8; font-size: 0.85rem; margin-top: 4px; }
   .container { max-width: 1400px; margin: 0 auto; padding: 16px; }
-  /* 分頁選單 */
   .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
   .tab { padding: 8px 16px; border-radius: 8px; border: 1px solid #475569; background: #1e293b; color: #94a3b8; cursor: pointer; font-size: 0.9rem; }
   .tab:hover { background: #334155; color: #e2e8f0; }
   .tab.active { background: #f59e0b; color: #1e293b; font-weight: bold; border-color: #f59e0b; }
   .tab .cnt { opacity: 0.7; font-size: 0.75rem; }
-  .search-bar { display: flex; gap: 10px; margin-bottom: 14px; }
-  .search-bar input { flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid #475569; background: #1e293b; color: #e2e8f0; font-size: 0.95rem; }
-  .search-bar button { padding: 10px 20px; border-radius: 8px; border: none; background: #f59e0b; color: #1e293b; font-weight: bold; cursor: pointer; }
-  .table-wrap { overflow-x: auto; background: #1e293b; border-radius: 8px; }
-  table { width: 100%; border-collapse: collapse; min-width: 1100px; }
-  th { background: #334155; color: #f59e0b; padding: 8px 6px; text-align: center; font-size: 0.75rem; white-space: nowrap; position: sticky; top: 0; }
+  .toolbar { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .toolbar input { flex: 1; min-width: 200px; padding: 10px 14px; border-radius: 8px; border: 1px solid #475569; background: #1e293b; color: #e2e8f0; font-size: 0.95rem; }
+  .toolbar button { padding: 10px 18px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+  .btn-search { background: #f59e0b; color: #1e293b; }
+  .btn-excel { background: #22c55e; color: #052e16; }
+  .table-wrap { overflow-x: auto; background: #1e293b; border-radius: 8px; max-height: 70vh; }
+  table { width: 100%; border-collapse: collapse; min-width: 1200px; }
+  th { background: #334155; color: #f59e0b; padding: 8px 6px; text-align: center; font-size: 0.75rem; white-space: nowrap; position: sticky; top: 0; cursor: pointer; user-select: none; }
+  th:hover { background: #475569; }
+  th .arrow { font-size: 0.65rem; margin-left: 2px; }
   td { padding: 6px; border-top: 1px solid #2d3748; font-size: 0.78rem; text-align: center; }
   tr:hover { background: #2d3748; }
   .gift { color: #4ade80; }
@@ -32,8 +35,6 @@
   .badge { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 0.7rem; }
   .badge-y { background: #f59e0b33; color: #f59e0b; }
   .badge-k { background: #3b82f633; color: #60a5fa; }
-  .badge-src { background: #4ade8033; color: #4ade80; }
-  .badge-mops { background: #8b5cf633; color: #a78bfa; }
   .loading { text-align: center; padding: 40px; color: #94a3b8; }
   .stats { text-align: center; color: #94a3b8; font-size: 0.85rem; margin-bottom: 10px; }
   .stats b { color: #f59e0b; }
@@ -48,38 +49,37 @@
 <div class="container">
   <div class="tabs" id="tabs"></div>
 
-  <div class="search-bar">
+  <div class="toolbar">
     <input type="text" id="searchInput" placeholder="輸入公司代號或名稱，例如：1101 / 台泥 / 台積電">
-    <button onclick="search()">🔍 查詢</button>
+    <button class="btn-search" onclick="search()">🔍 查詢</button>
+    <button class="btn-excel" onclick="exportExcel()">📊 匯出 Excel</button>
   </div>
 
   <div class="stats" id="stats"></div>
 
   <div class="table-wrap">
-    <table>
+    <table id="dataTable">
       <thead>
         <tr>
-          <th>代號</th>
-          <th>公司</th>
-          <th>紀念品</th>
-          <th>狀態</th>
-          <th>純發領取</th>
-          <th>電投領取</th>
-          <th>電投文件</th>
-          <th>委發領取</th>
-          <th>委發(1股)</th>
-          <th>開會日</th>
-          <th>開會地</th>
-          <th>最後買進日</th>
-          <th>股代</th>
-          <th>改選</th>
-          <th>零股寄單</th>
-          <th>股價</th>
-          <th>來源</th>
+          <th onclick="sortBy('code')">代號<span class="arrow" id="arr-code"></span></th>
+          <th onclick="sortBy('name')">公司<span class="arrow" id="arr-name"></span></th>
+          <th onclick="sortBy('gift')">紀念品<span class="arrow" id="arr-gift"></span></th>
+          <th onclick="sortBy('pure')">純發領取<span class="arrow" id="arr-pure"></span></th>
+          <th onclick="sortBy('evote')">電投領取<span class="arrow" id="arr-evote"></span></th>
+          <th onclick="sortBy('evote_docs')">電投文件<span class="arrow" id="arr-evote_docs"></span></th>
+          <th onclick="sortBy('entrust')">委發領取<span class="arrow" id="arr-entrust"></span></th>
+          <th onclick="sortBy('entrust_loc_1')">委發(1股)<span class="arrow" id="arr-entrust_loc_1"></span></th>
+          <th onclick="sortBy('meeting_date')">開會日<span class="arrow" id="arr-meeting_date"></span></th>
+          <th onclick="sortBy('meeting_location')">開會地<span class="arrow" id="arr-meeting_location"></span></th>
+          <th onclick="sortBy('last_buy_date')">最後買進日<span class="arrow" id="arr-last_buy_date"></span></th>
+          <th onclick="sortBy('agent')">股代<span class="arrow" id="arr-agent"></span></th>
+          <th onclick="sortBy('reelection')">改選<span class="arrow" id="arr-reelection"></span></th>
+          <th onclick="sortBy('zero_lot_mail')">零股寄單<span class="arrow" id="arr-zero_lot_mail"></span></th>
+          <th onclick="sortBy('price')">股價<span class="arrow" id="arr-price"></span></th>
         </tr>
       </thead>
       <tbody id="tableBody">
-        <tr><td colspan="17" class="loading">載入資料中...</td></tr>
+        <tr><td colspan="15" class="loading">載入資料中...</td></tr>
       </tbody>
     </table>
   </div>
@@ -90,9 +90,13 @@
   </div>
 </div>
 
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <script>
 let DB = null;
 let currentTab = 'all';
+let sortKey = null;
+let sortDir = 1;
+let currentRows = [];
 
 const TABS = [
   {key: 'all', label: '📋 全部', filter: null},
@@ -110,10 +114,10 @@ async function loadData() {
     document.getElementById('meetCount').textContent = DB.meta.meeting_count;
     document.getElementById('updated').textContent = DB.meta.updated;
     buildTabs();
-    render();
+    refresh();
   } catch(e) {
     document.getElementById('tableBody').innerHTML =
-      '<tr><td colspan="17" class="loading">❌ 資料載入失敗</td></tr>';
+      '<tr><td colspan="15" class="loading">❌ 資料載入失敗</td></tr>';
   }
 }
 
@@ -130,45 +134,54 @@ function buildTabs() {
 
 function switchTab(key) {
   currentTab = key;
-  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
   buildTabs();
-  render();
+  refresh();
 }
 
-function getFiltered() {
-  const tab = TABS.find(t => t.key === currentTab);
-  if (!tab || !tab.filter) return DB.companies;
-  // 每家公司找符合該頁的會議
-  return DB.companies.filter(c => c.meetings.some(tab.filter));
+/** 過濾：紀念品為「無」的不顯示（未定保留） */
+function isGiftMeaningful(gift) {
+  if (!gift) return false;
+  const g = String(gift).trim();
+  if (g === '無' || g === '-' || g === '不發') return false;
+  return true;
 }
 
-function render() {
+function getMeeting(c) {
   const tab = TABS.find(t => t.key === currentTab);
-  const companies = getFiltered();
+  if (tab && tab.filter) {
+    return c.meetings.find(tab.filter) || null;
+  }
+  return c.meetings[c.meetings.length - 1] || null;
+}
+
+function refresh() {
+  const rows = [];
+  for (const c of DB.companies) {
+    const m = getMeeting(c);
+    if (!m) continue;
+    if (!isGiftMeaningful(m.gift)) continue;  // 「無」不顯示
+    rows.push({company: c, meeting: m});
+  }
+  currentRows = rows;
   document.getElementById('stats').innerHTML =
-    `<span>📊 顯示 <b>${companies.length}</b> 家公司</span>` +
-    (tab && tab.filter ? `<span>📅 ${tab.label}</span>` : `<span>📅 全部年度</span>`);
+    `<span>📊 顯示 <b>${rows.length}</b> 家公司</span>`;
+  if (sortKey) applySort();
+  else renderRows(rows);
+}
 
+function renderRows(rows) {
   const tbody = document.getElementById('tableBody');
-  if (!companies.length) {
-    tbody.innerHTML = '<tr><td colspan="17" class="loading">沒有符合的資料</td></tr>';
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="15" class="loading">沒有符合的資料</td></tr>';
     return;
   }
-  tbody.innerHTML = companies.slice(0, 200).map(c => {
-    // 找該頁符合的會議（全部頁顯示最近一場）
-    let m;
-    if (tab && tab.filter) {
-      m = c.meetings.find(tab.filter) || c.meetings[c.meetings.length - 1];
-    } else {
-      m = c.meetings[c.meetings.length - 1] || {};
-    }
-    const src = m.source === 'gnepin' ? '<span class="badge badge-src">定案</span>' : '<span class="badge badge-mops">MOPS</span>';
+  tbody.innerHTML = rows.slice(0, 500).map(r => {
+    const c = r.company, m = r.meeting;
     return `
     <tr>
       <td><strong>${c.code}</strong></td>
       <td>${c.name}</td>
       <td class="gift">${m.gift || '-'}</td>
-      <td><span class="badge badge-y">${m.gift_status || '-'}</span></td>
       <td class="date">${m.pure_start ? m.pure_start + '~' + m.pure_end : '-'}</td>
       <td class="date">${m.evote_start ? m.evote_start + '~' + m.evote_end : '-'}<br><span class="sub">${m.evote_location || ''}</span></td>
       <td class="sub">${m.evote_docs || '-'}</td>
@@ -181,53 +194,67 @@ function render() {
       <td>${m.reelection || '-'}</td>
       <td>${m.zero_lot_mail || '-'}</td>
       <td>${m.est_price || '-'}</td>
-      <td>${src}</td>
     </tr>`;
   }).join('');
+}
+
+/** 排序 */
+function sortBy(key) {
+  if (sortKey === key) sortDir = -sortDir;
+  else { sortKey = key; sortDir = 1; }
+  // 更新箭頭
+  document.querySelectorAll('th .arrow').forEach(a => a.textContent = '');
+  const arr = document.getElementById('arr-' + key);
+  if (arr) arr.textContent = sortDir === 1 ? '▲' : '▼';
+  applySort();
+}
+
+function applySort() {
+  const val = r => {
+    const m = r.meeting;
+    const v = {code: r.company.code, name: r.company.name, gift: m.gift, pure: m.pure_start, evote: m.evote_start, evote_docs: m.evote_docs, entrust: m.entrust_start, entrust_loc_1: m.entrust_loc_1, meeting_date: m.meeting_date, meeting_location: m.meeting_location, last_buy_date: m.last_buy_date, agent: m.agent, reelection: m.reelection, zero_lot_mail: m.zero_lot_mail, price: parseFloat(m.est_price) || -1}[sortKey];
+    return v === undefined || v === null ? '' : v;
+  };
+  const sorted = [...currentRows].sort((a, b) => {
+    const va = val(a), vb = val(b);
+    if (va === vb) return 0;
+    if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * sortDir;
+    return String(va).localeCompare(String(vb), 'zh-Hant') * sortDir;
+  });
+  renderRows(sorted);
 }
 
 function search() {
   const q = document.getElementById('searchInput').value.trim().toLowerCase();
   if (!q || !DB) return;
-  const all = getFiltered();
-  const results = all.filter(c =>
-    c.code.toLowerCase().includes(q) || c.name.toLowerCase().includes(q)
+  const results = currentRows.filter(r =>
+    r.company.code.toLowerCase().includes(q) || r.company.name.toLowerCase().includes(q)
   );
-  const tbody = document.getElementById('tableBody');
-  if (!results.length) {
-    tbody.innerHTML = '<tr><td colspan="17" class="loading">沒有符合的資料</td></tr>';
-    return;
-  }
+  renderRows(results.slice(0, 500));
+}
+
+/** 匯出 Excel（目前頁面） */
+function exportExcel() {
+  if (!currentRows.length) return;
   const tab = TABS.find(t => t.key === currentTab);
-  tbody.innerHTML = results.slice(0, 200).map(c => {
-    let m;
-    if (tab && tab.filter) {
-      m = c.meetings.find(tab.filter) || c.meetings[c.meetings.length - 1];
-    } else {
-      m = c.meetings[c.meetings.length - 1] || {};
-    }
-    const src = m.source === 'gnepin' ? '<span class="badge badge-src">定案</span>' : '<span class="badge badge-mops">MOPS</span>';
-    return `
-    <tr>
-      <td><strong>${c.code}</strong></td>
-      <td>${c.name}</td>
-      <td class="gift">${m.gift || '-'}</td>
-      <td><span class="badge badge-y">${m.gift_status || '-'}</span></td>
-      <td class="date">${m.pure_start ? m.pure_start + '~' + m.pure_end : '-'}</td>
-      <td class="date">${m.evote_start ? m.evote_start + '~' + m.evote_end : '-'}<br><span class="sub">${m.evote_location || ''}</span></td>
-      <td class="sub">${m.evote_docs || '-'}</td>
-      <td class="date">${m.entrust_start ? m.entrust_start + '~' + m.entrust_end : '-'}</td>
-      <td class="sub">${m.entrust_loc_1 || '-'}</td>
-      <td class="date">${m.meeting_date || '-'}</td>
-      <td class="sub">${m.meeting_location || '-'}</td>
-      <td class="date">${m.last_buy_date || '-'}</td>
-      <td class="sub">${m.agent || '-'}<br>${m.agent_phone || ''}</td>
-      <td>${m.reelection || '-'}</td>
-      <td>${m.zero_lot_mail || '-'}</td>
-      <td>${m.est_price || '-'}</td>
-      <td>${src}</td>
-    </tr>`;
-  }).join('');
+  const headers = ['代號','公司','紀念品','純發領取','電投領取','電投文件','委發領取','委發(1股)','開會日','開會地','最後買進日','股代','改選','零股寄單','股價'];
+  const data = [headers];
+  for (const r of currentRows) {
+    const c = r.company, m = r.meeting;
+    data.push([
+      c.code, c.name, m.gift || '',
+      m.pure_start ? m.pure_start + '~' + m.pure_end : '',
+      m.evote_start ? m.evote_start + '~' + m.evote_end : '',
+      m.evote_docs || '', m.entrust_start ? m.entrust_start + '~' + m.entrust_end : '',
+      m.entrust_loc_1 || '', m.meeting_date || '', m.meeting_location || '',
+      m.last_buy_date || '', m.agent || '', m.reelection || '', m.zero_lot_mail || '',
+      m.est_price || ''
+    ]);
+  }
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, tab ? tab.label : '全部');
+  XLSX.writeFile(wb, `股東會紀念品_${tab ? tab.label : '全部'}.xlsx`);
 }
 
 document.getElementById('searchInput').addEventListener('keyup', e => {
