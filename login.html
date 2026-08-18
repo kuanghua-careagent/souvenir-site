@@ -76,8 +76,7 @@
 
 <script src="auth.js"></script>
 <script>
-const USERS_KEY = 'souvenir_users';
-const SESSION_KEY = 'souvenir_session';
+// USERS_KEY / SESSION_KEY 已在 auth.js 定義
 
 function loadUsers() {
   try { return JSON.parse(localStorage.getItem(USERS_KEY)) || []; }
