@@ -184,7 +184,7 @@ function register() {
     msg.className = 'msg err'; msg.textContent = '❌ 此 Email 已註冊'; return;
   }
 
-  // ═══ 自動編碼 ═══
+  // ═══ 自動編碼（本機版）═══
   const memberId = nextMemberId(users);          // M001
   const certCode = nextCertCode(users, group);   // L2-01
 
@@ -208,7 +208,7 @@ function register() {
 
   msg.className = 'msg ok';
   msg.textContent = '✅ 註冊成功！請前往帳戶管理建立子帳號';
-  setTimeout(() => window.location.href = 'account.html?user=' + email, 1500);
+  setTimeout(() => window.location.href = 'account.html?user=' + encodeURIComponent(email), 1500);
 }
 </script>
 </body>
