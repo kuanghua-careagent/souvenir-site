@@ -83,6 +83,17 @@
           <option value="一般客戶">一般客戶</option>
         </select>
       </div>
+      <div style="flex:1; min-width:150px;">
+        <label>證件類型</label>
+        <select id="masterDocType">
+          <option value="身分證">身分證</option>
+          <option value="健保卡">健保卡</option>
+          <option value="駕照">駕照</option>
+          <option value="戶口名簿">戶口名簿</option>
+          <option value="戶籍謄本">戶籍謄本</option>
+          <option value="NA">NA</option>
+        </select>
+      </div>
     </div>
     <div id="masterCodes" style="margin-bottom:10px;"></div>
     <div style="margin-top:8px;">
@@ -194,6 +205,7 @@ function loadMaster() {
   document.getElementById('masterName').value = currentUser.name || '';
   document.getElementById('masterId').value = currentUser.id || '';
   document.getElementById('masterGroup').value = currentUser.group || '興園群';
+  document.getElementById('masterDocType').value = currentUser.docType || '身分證';
 
   const codes = document.getElementById('masterCodes');
   codes.innerHTML =
@@ -213,6 +225,7 @@ function saveMaster() {
   u.name = document.getElementById('masterName').value.trim();
   u.id = document.getElementById('masterId').value.trim().toUpperCase();
   u.group = document.getElementById('masterGroup').value;
+  u.docType = document.getElementById('masterDocType').value;
   // 群組變更 → 重新編碼
   if (oldGroup !== u.group) {
     u.certCode = nextCertCode(users, u.group, u);
@@ -354,16 +367,16 @@ function renderRoster() {
     </tr>`).join('');
 }
 
-/** 匯出會員清冊 CSV（格式同 名冊.csv） */
+/** 匯出會員清冊 CSV（格式同 名冊.csv，含證件類型） */
 function exportRoster() {
   if (!currentUser) { alert('請先註冊'); return; }
   const users = loadUsers();
-  const rows = [['姓名', '身分證號', '會員編號', '身分別']];
+  const rows = [['姓名', '身分證號', '會員編號', '證件類型', '身分別']];
 
   for (const u of users) {
-    rows.push([u.name, u.id, u.certCode, '正身']);
+    rows.push([u.name, u.id, u.certCode, u.docType || '身分證', '主帳號']);
     for (const s of (u.subs || [])) {
-      rows.push([s.name, s.id, s.certCode, s.docType === '身分證' ? '正身' : '正文']);
+      rows.push([s.name, s.id, s.certCode, s.docType || '身分證', '子帳號']);
     }
   }
 

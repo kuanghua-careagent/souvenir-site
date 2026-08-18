@@ -77,6 +77,17 @@
     <input type="text" id="regId" placeholder="例：A123456789">
     <div class="hint">用於股東身分驗證（1 英文字母 + 9 數字）</div>
 
+    <label>證件類型</label>
+    <select id="regDocType">
+      <option value="身分證">身分證</option>
+      <option value="健保卡">健保卡</option>
+      <option value="駕照">駕照</option>
+      <option value="戶口名簿">戶口名簿</option>
+      <option value="戶籍謄本">戶籍謄本</option>
+      <option value="NA">NA</option>
+    </select>
+    <div class="hint">主帳號的領取身分證件（對應會員.xlsx 證件類型欄位）</div>
+
     <label>手機</label>
     <input type="tel" id="regTel" placeholder="0912345678">
 
@@ -149,6 +160,7 @@ function register() {
   const id = document.getElementById('regId').value.trim().toUpperCase();
   const tel = document.getElementById('regTel').value.trim();
   const group = document.getElementById('regGroup').value;
+  const docType = document.getElementById('regDocType').value;
   const msg = document.getElementById('regMsg');
 
   // 驗證
@@ -179,7 +191,7 @@ function register() {
   const certCode = nextCertCode(users, group);   // L2-01
 
   users.push({
-    email, pass, name, id, tel, group,
+    email, pass, name, id, tel, group, docType,
     memberId,          // 會員ID：M001
     certCode,          // 證件編號：L2-01
     subs: [],          // 子帳號（稍後在帳戶管理新增）
