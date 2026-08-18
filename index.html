@@ -123,6 +123,8 @@ const TABS = [
 ];
 
 async function loadData() {
+  // 全站會員制：未登入跳轉登入頁
+  if (!requireAuth()) return;
   applyAuthNav();
   try {
     const res = await fetch('souvenir_db.json');
