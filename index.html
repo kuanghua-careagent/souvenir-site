@@ -10,7 +10,7 @@
   .header { background: linear-gradient(135deg, #1e293b, #334155); padding: 20px; text-align: center; border-bottom: 3px solid #f59e0b; }
   .header h1 { font-size: 1.6rem; color: #f59e0b; }
   .header p { color: #94a3b8; font-size: 0.85rem; margin-top: 4px; }
-  .container { max-width: 1400px; margin: 0 auto; padding: 16px; }
+  .container { max-width: 100%; margin: 0 auto; padding: 16px 24px; }
   .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
   .nav { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
   .nav a { padding: 8px 16px; border-radius: 8px; border: 1px solid #475569; background: #1e293b; color: #94a3b8; text-decoration: none; font-size: 0.9rem; }
@@ -36,6 +36,7 @@
   .gift { color: #4ade80; }
   .date { color: #fbbf24; white-space: nowrap; }
   .sub { color: #94a3b8; font-size: 0.9rem; }
+  .sub-lg { color: #e2e8f0; font-size: 1.15rem; }
   .meta { text-align: center; color: #64748b; font-size: 1rem; margin-top: 14px; }
   .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.9rem; }
   .badge-y { background: #f59e0b33; color: #f59e0b; }
@@ -223,11 +224,11 @@ function renderRows(rows) {
       <td class="gift">${m.gift || '-'}</td>
       <td class="date">${m.pure_start ? m.pure_start + '~' + m.pure_end : '-'}</td>
       <td class="date">${m.evote_start ? m.evote_start + '~' + m.evote_end : '-'}<br><span class="sub">${m.evote_location || ''}</span></td>
-      <td class="sub">${m.evote_docs || '-'}</td>
+      <td class="sub-lg">${m.evote_docs || '-'}</td>
       <td class="date">${m.entrust_start ? m.entrust_start + '~' + m.entrust_end : '-'}</td>
       <td class="sub">${m.entrust_loc_1 || '-'}</td>
       <td class="date">${m.meeting_date || '-'}</td>
-      <td class="sub">${m.meeting_location || '-'}</td>
+      <td class="sub-lg">${m.meeting_location || '-'}</td>
       <td class="date">${m.last_buy_date || '-'}</td>
       <td class="sub">${m.agent || '-'}<br>${m.agent_phone || ''}</td>
       <td>${m.est_price || '-'}</td>
