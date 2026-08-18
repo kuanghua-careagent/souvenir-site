@@ -47,9 +47,9 @@
         <th>公司</th>
         <th>紀念品</th>
         <th>狀態</th>
-        <th>粗估買價</th>
-        <th>最後買進日</th>
         <th>開會日</th>
+        <th>最後買進日</th>
+        <th>預估股價</th>
       </tr>
     </thead>
     <tbody id="tableBody">
@@ -91,9 +91,9 @@ function render(records) {
       <td>${r.name}</td>
       <td class="gift">${r.gift || '-'}</td>
       <td><span class="badge badge-temp">${r.gift_status || '-'}</span></td>
-      <td>${r.est_price || '-'}</td>
-      <td class="date">${r.last_buy_date || '-'}</td>
       <td>${r.meeting_date || '-'}</td>
+      <td class="date">${r.last_buy_date || '-'}</td>
+      <td>${r.est_price || '-'}</td>
     </tr>`).join('');
 }
 
