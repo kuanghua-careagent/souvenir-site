@@ -30,6 +30,7 @@
   th { background: #334155; color: #f59e0b; padding: 8px 6px; text-align: center; font-size: 0.75rem; white-space: nowrap; position: sticky; top: 0; cursor: pointer; user-select: none; }
   th:hover { background: #475569; }
   th .arrow { font-size: 0.65rem; margin-left: 2px; }
+  th .sort-hint { font-size: 0.6rem; opacity: 0.5; margin-left: 2px; }
   td { padding: 6px; border-top: 1px solid #2d3748; font-size: 0.78rem; text-align: center; }
   tr:hover { background: #2d3748; }
   .gift { color: #4ade80; }
@@ -74,21 +75,21 @@
     <table id="dataTable">
       <thead>
         <tr>
-          <th onclick="sortBy('code')">代號<span class="arrow" id="arr-code"></span></th>
-          <th onclick="sortBy('name')">公司<span class="arrow" id="arr-name"></span></th>
-          <th onclick="sortBy('gift')">紀念品<span class="arrow" id="arr-gift"></span></th>
-          <th onclick="sortBy('pure')">純發領取<span class="arrow" id="arr-pure"></span></th>
-          <th onclick="sortBy('evote')">電投領取<span class="arrow" id="arr-evote"></span></th>
-          <th onclick="sortBy('evote_docs')">電投文件<span class="arrow" id="arr-evote_docs"></span></th>
-          <th onclick="sortBy('entrust')">委發領取<span class="arrow" id="arr-entrust"></span></th>
-          <th onclick="sortBy('entrust_loc_1')">委發(1股)<span class="arrow" id="arr-entrust_loc_1"></span></th>
-          <th onclick="sortBy('meeting_date')">開會日<span class="arrow" id="arr-meeting_date"></span></th>
-          <th onclick="sortBy('meeting_location')">開會地<span class="arrow" id="arr-meeting_location"></span></th>
-          <th onclick="sortBy('last_buy_date')">最後買進日<span class="arrow" id="arr-last_buy_date"></span></th>
-          <th onclick="sortBy('agent')">股代<span class="arrow" id="arr-agent"></span></th>
-          <th onclick="sortBy('reelection')">改選<span class="arrow" id="arr-reelection"></span></th>
-          <th onclick="sortBy('zero_lot_mail')">零股寄單<span class="arrow" id="arr-zero_lot_mail"></span></th>
-          <th onclick="sortBy('price')">股價<span class="arrow" id="arr-price"></span></th>
+          <th onclick="sortBy('code')">代號<span class="arrow" id="arr-code"></span><span class="sort-hint">↕</span></th>
+          <th onclick="sortBy('name')">公司<span class="arrow" id="arr-name"></span><span class="sort-hint">↕</span></th>
+          <th onclick="sortBy('gift')">紀念品<span class="arrow" id="arr-gift"></span><span class="sort-hint">↕</span></th>
+          <th onclick="sortBy('pure')">純發領取<span class="arrow" id="arr-pure"></span><span class="sort-hint">↕</span></th>
+          <th onclick="sortBy('evote')">電投領取<span class="arrow" id="arr-evote"></span><span class="sort-hint">↕</span></th>
+          <th onclick="sortBy('evote_docs')">電投文件<span class="arrow" id="arr-evote_docs"></span><span class="sort-hint">↕</span></th>
+          <th onclick="sortBy('entrust')">委發領取<span class="arrow" id="arr-entrust"></span><span class="sort-hint">↕</span></th>
+          <th onclick="sortBy('entrust_loc_1')">委發(1股)<span class="arrow" id="arr-entrust_loc_1"></span><span class="sort-hint">↕</span></th>
+          <th onclick="sortBy('meeting_date')">開會日<span class="arrow" id="arr-meeting_date"></span><span class="sort-hint">↕</span></th>
+          <th onclick="sortBy('meeting_location')">開會地<span class="arrow" id="arr-meeting_location"></span><span class="sort-hint">↕</span></th>
+          <th onclick="sortBy('last_buy_date')">最後買進日<span class="arrow" id="arr-last_buy_date"></span><span class="sort-hint">↕</span></th>
+          <th onclick="sortBy('agent')">股代<span class="arrow" id="arr-agent"></span><span class="sort-hint">↕</span></th>
+          <th onclick="sortBy('reelection')">改選<span class="arrow" id="arr-reelection"></span><span class="sort-hint">↕</span></th>
+          <th onclick="sortBy('zero_lot_mail')">零股寄單<span class="arrow" id="arr-zero_lot_mail"></span><span class="sort-hint">↕</span></th>
+          <th onclick="sortBy('price')">股價<span class="arrow" id="arr-price"></span><span class="sort-hint">↕</span></th>
         </tr>
       </thead>
       <tbody id="tableBody">
