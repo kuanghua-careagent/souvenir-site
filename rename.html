@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF／圖檔 批次改名系統 v4.0</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.0/dist/tesseract.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Microsoft JhengHei', 'PingFang TC', Arial, sans-serif; background: #f5f6fa; color: #2d3436; min-height: 100vh; }
+
+.header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 24px 32px; }
+.header h1 { font-size: 22px; font-weight: 700; }
+.header p  { font-size: 13px; opacity: 0.85; margin-top: 6px; }
+.site-nav { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+.site-nav a { padding: 6px 14px; border-radius: 6px; background: rgba(255,255,255,0.15); color: white; text-decoration: none; font-size: 0.8rem; }
+.site-nav a:hover { background: rgba(255,255,255,0.3); }
+.site-nav a.active { background: rgba(255,255,255,0.95); color: #764ba2; font-weight: bold; }
+
+.container { max-width: 980px; margin: 24px auto; padding: 0 16px 40px; }
+
+.card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+.card-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; color: #2d3436; display: flex; align-items: center; gap: 10px; }
+.step-badge { background: #667eea; color: white; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+.upload-zone { border: 2px dashed #dfe6e9; border-radius: 10px; padding: 22px 16px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; background: #fafbfc; }
+.upload-zone:hover, .upload-zone.dragover { border-color: #667eea; background: #f0f0ff; }
+.upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.upload-zone .uz-icon  { font-size: 30px; margin-bottom: 8px; }
+.upload-zone .uz-label { font-size: 13px; color: #636e72; }
+.upload-zone .uz-sub   { font-size: 11px; color: #b2bec3; margin-top: 4px; }
+.upload-zone-title { font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #444; }
+
+.upload-status { margin-top: 8px; font-size: 12px; padding: 6px 10px; border-radius: 6px; display: none; }
+.upload-status.ok  { background: #e6f9f2; color: #00a86b; display: block; }
+.upload-status.err { background: #fff3cd; color: #b8620a; display: block; }
+
+.file-list { max-height: 180px; overflow-y: auto; margin-top: 12px; border: 1px solid #e0e0e0; border-radius: 8px; padding: 8px; }
+.file-item { font-size: 12px; padding: 4px 8px; border-radius: 4px; background: #f8f9fa; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; color: #444; }
+.file-item.is-img { background: #fff8e1; }
+
+.btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); color: white; width: 100%; justify-content: center; padding: 12px 28px; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+.btn-primary:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(102,126,234,0.4); }
+.btn-primary:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+.btn-dl { background: #00b894; color: white; padding: 10px 22px; font-size: 14px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; transition: all 0.2s; }
+.btn-dl:hover:not(:disabled) { background: #00a381; }
+.btn-dl:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.progress-wrap { margin-top: 16px; display: none; }
+.progress-bar  { background: #eee; border-radius: 999px; height: 8px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); border-radius: 999px; transition: width 0.25s; width: 0%; }
+.progress-text { font-size: 12px; color: #636e72; margin-top: 6px; text-align: center; min-height: 18px; }
+
+.log-box { background: #1e272e; color: #dfe6e9; border-radius: 8px; padding: 14px 16px; font-family: 'Consolas','Courier New',monospace; font-size: 12px; max-height: 220px; overflow-y: auto; margin-top: 14px; display: none; line-height: 1.8; }
+.log-ok   { color: #55efc4; }
+.log-warn { color: #ffeaa7; }
+.log-err  { color: #ff7675; }
+.log-info { color: #74b9ff; }
+
+.results-section { display: none; }
+.res-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+.res-title  { font-size: 15px; font-weight: 700; }
+
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+.stat-box  { background: #f8f9fa; border-radius: 10px; padding: 14px; text-align: center; border-left: 4px solid #ddd; }
+.stat-num  { font-size: 26px; font-weight: 800; }
+.stat-lbl  { font-size: 12px; color: #636e72; margin-top: 2px; }
+.stat-total { border-color: #6c5ce7; } .stat-total .stat-num { color: #6c5ce7; }
+.stat-new1  { border-color: #00b894; } .stat-new1  .stat-num { color: #00b894; }
+.stat-new2  { border-color: #e17055; } .stat-new2  .stat-num { color: #e17055; }
+.stat-err   { border-color: #d63031; } .stat-err   .stat-num { color: #d63031; }
+
+.table-wrap  { border: 1px solid #e8e8e8; border-radius: 8px; overflow: hidden; }
+.res-table   { width: 100%; border-collapse: collapse; font-size: 13px; }
+.res-table thead th { background: #f4f5f7; padding: 10px 12px; text-align: left; font-weight: 700; color: #555; border-bottom: 2px solid #e0e0e0; }
+.res-table tbody td { padding: 8px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+.res-table tbody tr:last-child td { border-bottom: none; }
+.res-table tbody tr:hover { background: #fafbfc; }
+.res-scroll  { max-height: 460px; overflow-y: auto; }
+
+.badge   { display: inline-block; padding: 2px 9px; border-radius: 12px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.b-new1  { background: #e6f9f2; color: #00a86b; }
+.b-new2  { background: #fff3e0; color: #e17055; }
+.b-ok    { background: #e6f9f2; color: #00a86b; }
+.b-err   { background: #ffe0e0; color: #d63031; }
+.b-pdf   { background: #e8eaf6; color: #5c6bc0; }
+.b-img   { background: #fff8e1; color: #f57f17; }
+
+.note-cell { color: #888; font-size: 11px; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fn-old { color: #636e72; font-size: 12px; }
+.fn-new { color: #2d3436; font-size: 12px; font-weight: 600; }
+.extracted { color: #6c5ce7; font-size: 11px; }
+
+.tip { background: #e8f4fd; border-left: 3px solid #74b9ff; border-radius: 6px; padding: 10px 14px; font-size: 12px; color: #2980b9; margin-top: 12px; line-height: 1.7; }
+.ocr-notice { background: #fff3e0; border-left: 3px solid #ff9800; border-radius: 6px; padding: 10px 14px; font-size: 12px; color: #e65100; margin-top: 12px; line-height: 1.7; display: none; }
+
+/* Field extraction preview panel */
+.field-panel { background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px 14px; margin-top: 8px; font-size: 12px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.field-item label { color: #888; font-size: 11px; display: block; margin-bottom: 2px; }
+.field-item span  { font-weight: 600; color: #2d3436; }
+.field-item span.na { color: #b2bec3; font-weight: 400; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📄🖼 PDF／圖檔 批次改名系統 v4.0</h1>
+  <p>自動辨識文件中的戶名、戶號、證券代號、證件編號，依電投領狀態分類輸出 NEW1 / NEW2</p>
+  <div class="site-nav">
+    <a href="index.html">📋 紀念品查詢</a>
+    <a href="account.html">👤 帳戶管理</a>
+    <a href="register.html">📝 註冊</a>
+    <a href="rename.html" class="active">📄 批次改名</a>
+    <a href="merge.html">✂️ 截取合併</a>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- STEP 1 -->
+  <div class="card">
+    <div class="card-title"><span class="step-badge">1</span> 上傳 Excel 資料檔</div>
+    <div class="grid2">
+      <div>
+        <div class="upload-zone-title">📊 公司清冊.xlsx</div>
+        <div class="upload-zone" id="zone-company">
+          <input type="file" id="file-company" accept=".xlsx,.xls">
+          <div class="uz-icon">🏢</div>
+          <div class="uz-label">點擊或拖曳上傳</div>
+          <div class="uz-sub">公司清冊.xlsx</div>
+        </div>
+        <div class="upload-status" id="status-company"></div>
+      </div>
+      <div>
+        <div class="upload-zone-title">👥 名冊.xlsx</div>
+        <div class="upload-zone" id="zone-roster">
+          <input type="file" id="file-roster" accept=".xlsx,.xls">
+          <div class="uz-icon">📋</div>
+          <div class="uz-label">點擊或拖曳上傳</div>
+          <div class="uz-sub">名冊.xlsx</div>
+        </div>
+        <div class="upload-status" id="status-roster"></div>
+      </div>
+    </div>
+    <div class="tip">
+      📌 <b>公司清冊</b>：代號、公司、開會日、電投領開始日（有值 → NEW1；空白 → NEW2）。<br>
+      📌 <b>名冊</b>：姓名、證件編號。工具先從文件擷取戶名比對，再取得對應證件編號。
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="card">
+    <div class="card-title"><span class="step-badge">2</span> 選擇 PDF 或圖片檔案</div>
+    <div class="upload-zone" id="zone-files">
+      <input type="file" id="file-input" accept=".pdf,.jpg,.jpeg,.png,.tif,.tiff,.bmp,.webp" multiple>
+      <div class="uz-icon">📁</div>
+      <div class="uz-label">點擊或拖曳選取檔案（可混合多選）</div>
+      <div class="uz-sub">支援 PDF、JPG、PNG、TIF、BMP、WEBP</div>
+    </div>
+    <div id="file-list" class="file-list" style="display:none;"></div>
+    <div class="ocr-notice" id="ocr-notice">
+      ⚠ 偵測到圖片檔案，首次執行需下載中文 OCR 語言包（約 10MB），請確保網路連線。
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="card">
+    <div class="card-title"><span class="step-badge">3</span> 執行批次改名</div>
+    <button class="btn-primary" id="btn-process" disabled>🚀 開始批次改名</button>
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="progress-text" id="progress-text"></div>
+    </div>
+    <div class="log-box" id="log-box"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="card results-section" id="results-section">
+    <div class="res-header">
+      <div class="res-title">📋 改名結果</div>
+      <button class="btn-dl" id="btn-download">⬇ 下載 ZIP</button>
+    </div>
+    <div class="stats">
+      <div class="stat-box stat-total"><div class="stat-num" id="s-total">0</div><div class="stat-lbl">總計</div></div>
+      <div class="stat-box stat-new1" ><div class="stat-num" id="s-new1">0</div><div class="stat-lbl">NEW1（有發放）</div></div>
+      <div class="stat-box stat-new2" ><div class="stat-num" id="s-new2">0</div><div class="stat-lbl">NEW2（沒發放）</div></div>
+      <div class="stat-box stat-err"  ><div class="stat-num" id="s-err">0</div><div class="stat-lbl">無法判讀</div></div>
+    </div>
+    <div class="table-wrap">
+      <div class="res-scroll">
+        <table class="res-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>類型</th>
+              <th>原始檔名</th>
+              <th>擷取欄位</th>
+              <th>新檔名</th>
+              <th>資料夾</th>
+              <th>狀態</th>
+              <th>備註</th>
+            </tr>
+          </thead>
+          <tbody id="res-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── PDF.js worker ──────────────────────────────────────────────────────────
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ── Constants ──────────────────────────────────────────────────────────────
+const IMAGE_EXTS = new Set(['jpg','jpeg','png','tif','tiff','bmp','webp']);
+
+// ── State ──────────────────────────────────────────────────────────────────
+let companyMap = null;   // code → { date, hasDistribution, name }
+let nameMap    = null;   // personName → certCode
+let inputFiles = [];
+let resultZip  = null;
+let ocrWorker  = null;
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function fileExt(name) { return (name.split('.').pop() || '').toLowerCase(); }
+function isImage(name) { return IMAGE_EXTS.has(fileExt(name)); }
+
+/**
+ * Parse 開會日 float: 4.28→'04-28', 5.1→'05-10', 4.3→'04-30'
+ */
+function parseMeetingDate(val) {
+  if (val === null || val === undefined || val === '') return null;
+  const num = typeof val === 'number' ? val : parseFloat(val);
+  if (isNaN(num)) return null;
+  const month  = Math.floor(num);
+  const dayRaw = Math.round((num % 1) * 100);
+  if (month < 1 || month > 12 || dayRaw < 1 || dayRaw > 31) return null;
+  return String(month).padStart(2,'0') + '-' + String(dayRaw).padStart(2,'0');
+}
+
+function setStatus(id, msg, type) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className   = 'upload-status ' + type;
+}
+
+function checkReady() {
+  document.getElementById('btn-process').disabled = !(companyMap && nameMap && inputFiles.length > 0);
+}
+
+function logLine(msg, cls) {
+  const el = document.getElementById('log-box');
+  const d  = document.createElement('div');
+  if (cls) d.className = cls;
+  d.textContent = msg;
+  el.appendChild(d);
+  el.scrollTop = el.scrollHeight;
+}
+
+function setProgress(ratio, text) {
+  document.getElementById('progress-fill').style.width = Math.round(ratio * 100) + '%';
+  document.getElementById('progress-text').textContent = text;
+}
+
+// ── Load 公司清冊 ───────────────────────────────────────────────────────────
+document.getElementById('file-company').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    const ab    = await file.arrayBuffer();
+    const wb    = XLSX.read(ab, { type: 'array' });
+    const sheet = wb.Sheets['股東會資料表'] || wb.Sheets[wb.SheetNames[0]];
+    const data  = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: null });
+
+    let hi = 0;
+    for (let i = 0; i < Math.min(data.length, 5); i++) {
+      if (data[i] && data[i].some(c => String(c||'').includes('代號'))) { hi = i; break; }
+    }
+    const headers = (data[hi] || []).map(h => String(h||'').trim());
+    const cCode = headers.findIndex(h => h.includes('代號'));
+    const cName = headers.findIndex(h => h.includes('公司') && !h.includes('代'));
+    const cDate = headers.findIndex(h => h.includes('開會日'));
+    const cDist = headers.findIndex(h => h.includes('電投領開始'));
+
+    if (cCode < 0 || cDate < 0) throw new Error('找不到「代號」或「開會日」欄位');
+
+    companyMap = {};
+    let cnt = 0;
+    for (let i = hi + 1; i < data.length; i++) {
+      const row = data[i];
+      if (!row || (row[cCode] === null && row[cCode] !== 0)) continue;
+      const code = String(row[cCode]).trim();
+      if (!code) continue;
+      const distVal = cDist >= 0 ? row[cDist] : null;
+      companyMap[code] = {
+        date            : parseMeetingDate(row[cDate]),
+        hasDistribution : distVal !== null && distVal !== undefined && String(distVal).trim() !== '',
+        name            : cName >= 0 ? String(row[cName]||'').trim() : ''
+      };
+      cnt++;
+    }
+    const h = Object.values(companyMap).filter(v=>v.hasDistribution).length;
+    setStatus('status-company', `✅ 已載入 ${cnt} 家公司（有發放: ${h}，沒發放: ${cnt-h}）`, 'ok');
+    checkReady();
+  } catch (err) {
+    companyMap = null;
+    setStatus('status-company', '❌ 載入失敗：' + err.message, 'err');
+    checkReady();
+  }
+});
+
+// ── Load 名冊 ──────────────────────────────────────────────────────────────
+document.getElementById('file-roster').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    const ab   = await file.arrayBuffer();
+    const wb   = XLSX.read(ab, { type: 'array' });
+    const ws   = wb.Sheets[wb.SheetNames[0]];
+    const data = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
+
+    let hi = 0;
+    for (let i = 0; i < Math.min(data.length, 5); i++) {
+      if (data[i] && data[i].some(c => String(c||'').includes('姓名'))) { hi = i; break; }
+    }
+    const headers = (data[hi] || []).map(h => String(h||'').trim());
+    const cName = headers.findIndex(h => h.includes('姓名'));
+    const cCert = headers.findIndex(h => h.includes('證件編號'));
+
+    if (cName < 0 || cCert < 0) throw new Error('找不到「姓名」或「證件編號」欄位');
+
+    nameMap = {};
+    let cnt = 0;
+    for (let i = hi + 1; i < data.length; i++) {
+      const row = data[i];
+      if (!row || !row[cName] || !row[cCert]) continue;
+      const n = String(row[cName]).trim(), c = String(row[cCert]).trim();
+      if (n && c) { nameMap[n] = c; cnt++; }
+    }
+    setStatus('status-roster', `✅ 已載入 ${cnt} 筆人員資料`, 'ok');
+    checkReady();
+  } catch (err) {
+    nameMap = null;
+    setStatus('status-roster', '❌ 載入失敗：' + err.message, 'err');
+    checkReady();
+  }
+});
+
+// ── Load files ─────────────────────────────────────────────────────────────
+document.getElementById('file-input').addEventListener('change', (e) => {
+  inputFiles = Array.from(e.target.files);
+  const listEl = document.getElementById('file-list');
+  const hasImgs = inputFiles.some(f => isImage(f.name));
+  document.getElementById('ocr-notice').style.display = hasImgs ? 'block' : 'none';
+
+  if (inputFiles.length > 0) {
+    listEl.style.display = 'block';
+    listEl.innerHTML = inputFiles.map(f => {
+      const img = isImage(f.name);
+      return `<div class="file-item${img ? ' is-img' : ''}">${img ? '🖼' : '📄'} ${f.name}</div>`;
+    }).join('');
+  } else {
+    listEl.style.display = 'none';
+  }
+  checkReady();
+});
+
+// ── Drag & drop ────────────────────────────────────────────────────────────
+['zone-company','zone-roster','zone-files'].forEach(id => {
+  const z = document.getElementById(id);
+  z.addEventListener('dragover',  e => { e.preventDefault(); z.classList.add('dragover'); });
+  z.addEventListener('dragleave', () => z.classList.remove('dragover'));
+  z.addEventListener('drop', e => {
+    e.preventDefault();
+    z.classList.remove('dragover');
+    const input = z.querySelector('input[type="file"]');
+    const dt = new DataTransfer();
+    for (const f of e.dataTransfer.files) dt.items.add(f);
+    input.files = dt.files;
+    input.dispatchEvent(new Event('change'));
+  });
+});
+
+// ── PDF text extraction ────────────────────────────────────────────────────
+async function extractPDFText(arrayBuffer) {
+  try {
+    const pdf   = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer.slice(0)) }).promise;
+    const pages = Math.min(pdf.numPages, 5);
+    let text = '';
+    for (let p = 1; p <= pages; p++) {
+      const page    = await pdf.getPage(p);
+      const content = await page.getTextContent();
+      text += content.items.map(i => i.str).join('') + '\n';
+    }
+    return text;
+  } catch { return ''; }
+}
+
+// ── Tesseract OCR ──────────────────────────────────────────────────────────
+async function initOCRWorker() {
+  if (ocrWorker) return ocrWorker;
+  logLine('⏳ 初始化 OCR 引擎（首次需下載語言包，請稍候）…', 'log-warn');
+  ocrWorker = await Tesseract.createWorker(['chi_tra', 'eng'], 1, {
+    logger: m => {
+      if (m.status && m.progress !== undefined) {
+        setProgress(0, 'OCR 載入：' + m.status + ' ' + Math.round(m.progress * 100) + '%');
+      }
+    }
+  });
+  logLine('✅ OCR 引擎就緒', 'log-ok');
+  return ocrWorker;
+}
+
+async function extractImageText(file) {
+  const worker = await initOCRWorker();
+  const url    = URL.createObjectURL(file);
+  try {
+    const { data: { text } } = await worker.recognize(url);
+    return text || '';
+  } finally { URL.revokeObjectURL(url); }
+}
+
+// ── ★ Smart field extraction ───────────────────────────────────────────────
+/**
+ * Extract structured fields from document text.
+ * Document format (from sample):
+ *   - Header: "…對6419 京晨科技…"   or  "證券代號：6419"
+ *   - Top-right cert code: "L2-02- 正身"
+ *   - 戶名：李盈瑩
+ *   - 戶號：31071
+ *   - Barcode labels: "戶號：31071", "證券代號：6419"
+ */
+function extractFields(text, filename) {
+  const result = {
+    personName  : null,   // 戶名
+    acctNum     : null,   // 戶號
+    companyCode : null,   // 公司代號
+    certCode    : null,   // 證件編號 (directly from document, e.g. L2-02)
+    method      : {}      // how each field was found
+  };
+
+  // ── 戶名 ─────────────────────────────────────────────────────────────────
+  // Pattern: "戶名：李盈瑩" or "戶名 : 李盈瑩"
+  const nameM = text.match(/戶名\s*[：:]\s*([^\s\n\r，,。.　、　]+)/u);
+  if (nameM) {
+    result.personName = nameM[1].trim();
+    result.method.personName = '戶名欄位';
+  }
+
+  // ── 戶號 ─────────────────────────────────────────────────────────────────
+  const acctM = text.match(/戶號\s*[：:]\s*(\d+)/);
+  if (acctM) {
+    result.acctNum = acctM[1].trim();
+    result.method.acctNum = '戶號欄位';
+  }
+
+  // ── 公司代號 (多種來源) ────────────────────────────────────────────────────
+  // 1. Barcode label: "證券代號：6419"
+  const secCodeM = text.match(/證券代號\s*[：:]\s*(\w+)/);
+  if (secCodeM && companyMap && companyMap[secCodeM[1].trim()]) {
+    result.companyCode = secCodeM[1].trim();
+    result.method.companyCode = '證券代號標籤';
+  }
+  // 2. Header: "…對6419 公司名…" or "對 6419"
+  if (!result.companyCode) {
+    const hdrM = text.match(/對\s*([A-Z]?\d{3,6})\s+\S{2,}/);
+    if (hdrM && companyMap && companyMap[hdrM[1].trim()]) {
+      result.companyCode = hdrM[1].trim();
+      result.method.companyCode = '標題公司代號';
+    }
+  }
+  // 3. Filename segments
+  if (!result.companyCode) {
+    const base  = filename.replace(/\.[^.]+$/, '');
+    const parts = base.split('-');
+    for (const p of [parts[1], parts[2], ...parts]) {
+      if (p && companyMap && companyMap[p]) {
+        result.companyCode = p;
+        result.method.companyCode = '檔名';
+        break;
+      }
+    }
+  }
+  // 4. Scan all text for known codes (fallback)
+  if (!result.companyCode && companyMap) {
+    const codes = Object.keys(companyMap).sort((a,b) => b.length - a.length);
+    for (const code of codes) {
+      const esc = code.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      if (new RegExp('(?<![\\w\\.])' + esc + '(?![\\w\\.])').test(text)) {
+        result.companyCode = code;
+        result.method.companyCode = '全文比對';
+        break;
+      }
+    }
+  }
+
+  // ── 證件編號 (直接從文件右上角 e.g. "L2-02") ──────────────────────────────
+  // Pattern: capital letter + digit(s) + dash + digit(s)  e.g. L2-02, L3-16
+  const certMs = [...text.matchAll(/\b([A-Z]\d+-\d{2})\b/g)];
+  if (certMs.length > 0) {
+    result.certCode = certMs[0][1];
+    result.method.certCode = '文件直接擷取';
+  }
+
+  return result;
+}
+
+// ── Person name → cert code via 名冊 ──────────────────────────────────────
+function lookupCertCode(personName) {
+  if (!personName || !nameMap) return null;
+  if (nameMap[personName]) return nameMap[personName];
+  // Fuzzy: partial match (name contains roster name)
+  const names = Object.keys(nameMap).sort((a,b) => b.length - a.length);
+  for (const n of names) {
+    if (personName.includes(n) || n.includes(personName)) return nameMap[n];
+  }
+  return null;
+}
+
+// ── Main process ───────────────────────────────────────────────────────────
+document.getElementById('btn-process').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-process');
+  btn.disabled = true;
+
+  const pw    = document.getElementById('progress-wrap');
+  const logEl = document.getElementById('log-box');
+  pw.style.display    = 'block';
+  logEl.style.display = 'block';
+  logEl.innerHTML     = '';
+
+  logLine('▶ 開始處理 ' + inputFiles.length + ' 個檔案…', 'log-ok');
+
+  // Pre-init OCR if needed
+  if (inputFiles.some(f => isImage(f.name))) {
+    try { await initOCRWorker(); }
+    catch (err) {
+      logLine('❌ OCR 初始化失敗：' + err.message, 'log-err');
+    }
+  }
+
+  const zip    = new JSZip();
+  const fNew1  = zip.folder('NEW1');
+  const fNew2  = zip.folder('NEW2');
+  const results  = [];
+  const usedNames = { NEW1: {}, NEW2: {} };
+
+  let cntNew1 = 0, cntNew2 = 0, cntErr = 0;
+
+  for (let i = 0; i < inputFiles.length; i++) {
+    const file = inputFiles[i];
+    setProgress(i / inputFiles.length, `處理中 ${i+1}/${inputFiles.length}：${file.name}`);
+
+    const ext    = fileExt(file.name);
+    const imgFile = isImage(file.name);
+    let newName = null, folder = null, status = 'ok', notes = '';
+    let extracted = {};
+
+    try {
+      // 1. Get text
+      const ab   = await file.arrayBuffer();
+      const text = imgFile ? await extractImageText(file) : await extractPDFText(ab);
+
+      // 2. Extract structured fields
+      const fields = extractFields(text, file.name);
+      extracted = fields;
+
+      logLine(`  📋 ${file.name}`, 'log-info');
+      logLine(`     戶名: ${fields.personName || '—'}  戶號: ${fields.acctNum || '—'}  代號: ${fields.companyCode || '—'}  證件: ${fields.certCode || '—'}`);
+
+      // 3. Company code
+      const code = fields.companyCode;
+      if (!code) throw new Error('無法判讀公司代號（找不到證券代號）');
+      const co = companyMap[code];
+      if (!co || !co.date) throw new Error(`公司代號 ${code} 無開會日資料`);
+
+      // 4. Cert code — priority:
+      //    A) directly from document (certCode field)
+      //    B) lookup name in 名冊
+      let certCode = null;
+      let certMethod = '';
+
+      if (fields.certCode) {
+        certCode   = fields.certCode;
+        certMethod = '文件直接擷取';
+      } else if (fields.personName) {
+        certCode   = lookupCertCode(fields.personName);
+        certMethod = '名冊比對';
+      }
+
+      // Fallback: scan text for any roster name
+      if (!certCode && nameMap) {
+        const names = Object.keys(nameMap).sort((a,b) => b.length - a.length);
+        for (const n of names) {
+          if (text.includes(n)) {
+            certCode   = nameMap[n];
+            certMethod = '全文比對名冊';
+            if (!fields.personName) extracted.personName = n;
+            break;
+          }
+        }
+      }
+
+      if (!certCode) throw new Error('無法取得證件編號（戶名未在名冊中找到，文件中也無 L2-XX 格式）');
+
+      // 5. New filename
+      let candidate = `${co.date}-${code}-${certCode}.${ext}`;
+      folder = co.hasDistribution ? 'NEW1' : 'NEW2';
+
+      if (!usedNames[folder][candidate]) {
+        usedNames[folder][candidate] = 1; newName = candidate;
+      } else {
+        usedNames[folder][candidate]++;
+        newName = candidate.replace(`.${ext}`, `_${usedNames[folder][candidate]}.${ext}`);
+      }
+
+      // 6. Add to ZIP
+      const ab2 = await file.arrayBuffer();
+      (co.hasDistribution ? fNew1 : fNew2).file(newName, ab2);
+      co.hasDistribution ? cntNew1++ : cntNew2++;
+
+      notes = `${co.name} / ${extracted.personName || '—'} / ${certMethod}`;
+      logLine(`  ✓ → ${folder}/${newName}`, 'log-ok');
+
+    } catch (err) {
+      status = 'err'; notes = err.message; cntErr++;
+      logLine(`  ✗ ${err.message}`, 'log-err');
+    }
+
+    results.push({ idx: i+1, imgFile, original: file.name, extracted, newName, folder, status, notes });
+  }
+
+  setProgress(1, `完成！NEW1: ${cntNew1}，NEW2: ${cntNew2}，失敗: ${cntErr}`);
+  logLine(`✔ 全部完成。NEW1=${cntNew1}，NEW2=${cntNew2}，失敗=${cntErr}`, 'log-ok');
+
+  if (ocrWorker) { try { await ocrWorker.terminate(); } catch {} ocrWorker = null; }
+  resultZip = zip;
+
+  // Stats
+  document.getElementById('s-total').textContent = inputFiles.length;
+  document.getElementById('s-new1').textContent  = cntNew1;
+  document.getElementById('s-new2').textContent  = cntNew2;
+  document.getElementById('s-err').textContent   = cntErr;
+
+  // Table
+  document.getElementById('res-tbody').innerHTML = results.map(r => {
+    const typeBadge   = r.imgFile
+      ? '<span class="badge b-img">🖼 圖片</span>'
+      : '<span class="badge b-pdf">📄 PDF</span>';
+    const folderBadge = r.folder
+      ? `<span class="badge b-${r.folder.toLowerCase()}">${r.folder}</span>` : '—';
+    const statusBadge = r.status === 'ok'
+      ? '<span class="badge b-ok">成功</span>'
+      : '<span class="badge b-err">失敗</span>';
+    const f = r.extracted || {};
+    const fields = `<span class="extracted">戶名:${f.personName||'—'} 戶號:${f.acctNum||'—'} 代號:${f.companyCode||'—'} 證件:${f.certCode||'—'}</span>`;
+    return `<tr>
+      <td style="color:#aaa;font-size:12px;">${r.idx}</td>
+      <td>${typeBadge}</td>
+      <td class="fn-old">${r.original}</td>
+      <td>${fields}</td>
+      <td class="fn-new">${r.newName || '—'}</td>
+      <td>${folderBadge}</td>
+      <td>${statusBadge}</td>
+      <td class="note-cell" title="${r.notes}">${r.notes}</td>
+    </tr>`;
+  }).join('');
+
+  const sec = document.getElementById('results-section');
+  sec.style.display = 'block';
+  sec.scrollIntoView({ behavior: 'smooth' });
+
+  btn.disabled = false;
+});
+
+// ── Download ZIP ───────────────────────────────────────────────────────────
+document.getElementById('btn-download').addEventListener('click', async () => {
+  if (!resultZip) return;
+  const btn = document.getElementById('btn-download');
+  btn.textContent = '⏳ 打包中…';
+  btn.disabled = true;
+  try {
+    const blob = await resultZip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 1 } });
+    const url  = URL.createObjectURL(blob);
+    const a    = Object.assign(document.createElement('a'), { href: url, download: 'PDF改名結果_' + new Date().toISOString().slice(0,10) + '.zip' });
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } finally { btn.textContent = '⬇ 下載 ZIP'; btn.disabled = false; }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>PDF 截取與合併系統 v7.0</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"微軟正黑體",sans-serif;background:#1a1a2e;color:#e0e0e0;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.site-nav{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:center}
+.site-nav a{padding:6px 14px;border-radius:6px;background:#0f3460;color:#7ec8e3;text-decoration:none;font-size:.8rem}
+.site-nav a:hover{background:#1a4a80;color:#fff}
+.site-nav a.active{background:#00d4ff;color:#1a1a2e;font-weight:bold}
+.card{background:#16213e;border-radius:16px;padding:36px;width:620px;box-shadow:0 8px 32px #0008}
+h1{font-size:1.4em;color:#00d4ff;margin-bottom:4px}
+.sub{font-size:.85em;color:#888;margin-bottom:28px}
+.section{margin-bottom:20px}
+label{display:block;font-size:.9em;color:#aaa;margin-bottom:8px}
+.drop-zone{border:2px dashed #0f3460;border-radius:10px;padding:28px;text-align:center;cursor:pointer;transition:.2s;background:#0f3460}
+.drop-zone:hover{border-color:#00d4ff;background:#1a4a80}
+.drop-zone input{display:none}
+.drop-zone .icon{font-size:2.5em;margin-bottom:8px}
+.params{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:20px}
+.param{background:#0f3460;border-radius:8px;padding:12px;text-align:center}
+.param label{font-size:.78em;color:#888;margin-bottom:4px}
+.param input{width:100%;background:transparent;border:none;border-bottom:1px solid #00d4ff;color:#fff;font-size:1.1em;text-align:center;outline:none;padding:2px 0}
+.btn{width:100%;padding:14px;background:linear-gradient(135deg,#0078d4,#00d4ff);border:none;border-radius:10px;color:#fff;font-size:1.1em;font-weight:bold;cursor:pointer;transition:.2s;letter-spacing:1px}
+.btn:hover{opacity:.88}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.progress-wrap{background:#0f3460;border-radius:8px;height:10px;margin:16px 0;overflow:hidden;display:none}
+.progress-bar{height:100%;background:linear-gradient(90deg,#0078d4,#00d4ff);width:0%;transition:width .3s}
+.log{background:#0a0a1a;border-radius:8px;padding:14px;font-size:.82em;font-family:Consolas,monospace;height:180px;overflow-y:auto;white-space:pre-wrap;color:#7ec8e3;margin-top:16px;display:none}
+.tag{display:inline-block;background:#0078d4;color:#fff;border-radius:4px;padding:2px 8px;font-size:.75em;margin:2px}
+.files-info{font-size:.83em;color:#7ec8e3;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="site-nav">
+  <a href="index.html">📋 紀念品查詢</a>
+  <a href="account.html">👤 帳戶管理</a>
+  <a href="register.html">📝 註冊</a>
+  <a href="rename.html">📄 批次改名</a>
+  <a href="merge.html" class="active">✂️ 截取合併</a>
+</div>
+<div class="card">
+  <h1>📄 PDF 截取與合併系統</h1>
+  <div class="sub">v7.0 · 無需安裝 · 瀏覽器直接執行 · 合併以公司代碼命名</div>
+
+  <div class="section">
+    <label>選擇 PDF 檔案（可多選）</label>
+    <div class="drop-zone" onclick="document.getElementById('fileInput').click()">
+      <div class="icon">📂</div>
+      <div>點擊選擇 PDF 檔案，或拖曳至此</div>
+      <input type="file" id="fileInput" multiple accept=".pdf">
+    </div>
+    <div class="files-info" id="filesInfo"></div>
+  </div>
+
+  <div class="section">
+    <label>裁剪邊距 (mm)</label>
+    <div class="params">
+      <div class="param"><label>上邊</label><input type="number" id="pTop" value="4" min="0"></div>
+      <div class="param"><label>下邊</label><input type="number" id="pBottom" value="150" min="0"></div>
+      <div class="param"><label>左邊</label><input type="number" id="pLeft" value="5" min="0"></div>
+      <div class="param"><label>右邊</label><input type="number" id="pRight" value="5" min="0"></div>
+    </div>
+  </div>
+
+  <button class="btn" id="runBtn" onclick="run()">▶ 開始處理並下載 ZIP</button>
+  <div class="progress-wrap" id="progressWrap"><div class="progress-bar" id="progressBar"></div></div>
+  <div class="log" id="log"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script>
+const { PDFDocument, PDFName } = PDFLib;
+
+let selectedFiles = [];
+
+document.getElementById('fileInput').addEventListener('change', e => {
+  selectedFiles = Array.from(e.target.files).filter(f => f.name.endsWith('.pdf'));
+  selectedFiles.sort((a,b) => a.name.localeCompare(b.name));
+  const info = document.getElementById('filesInfo');
+  if(selectedFiles.length === 0){
+    info.textContent = '';
+    return;
+  }
+  // Show company codes detected
+  const codes = new Set();
+  selectedFiles.forEach(f => {
+    const m = f.name.match(/-(\d{3,6})-/);
+    if(m) codes.add(m[1]);
+  });
+  info.innerHTML = `✅ 已選擇 <b>${selectedFiles.length}</b> 個 PDF，偵測到公司代碼：${
+    [...codes].sort().map(c=>`<span class="tag">${c}</span>`).join('')
+  }`;
+});
+
+// Drag & Drop
+const dz = document.querySelector('.drop-zone');
+dz.addEventListener('dragover', e=>{e.preventDefault();dz.style.borderColor='#00d4ff'});
+dz.addEventListener('dragleave', ()=>dz.style.borderColor='#0f3460');
+dz.addEventListener('drop', e=>{
+  e.preventDefault();
+  dz.style.borderColor='#0f3460';
+  const input = document.getElementById('fileInput');
+  const dt = new DataTransfer();
+  Array.from(e.dataTransfer.files).filter(f=>f.name.endsWith('.pdf')).forEach(f=>dt.items.add(f));
+  input.files = dt.files;
+  input.dispatchEvent(new Event('change'));
+});
+
+const mm2pt = mm => mm * 72 / 25.4;
+
+function log(msg){ 
+  const el = document.getElementById('log');
+  el.style.display='block';
+  el.textContent += msg + '\n';
+  el.scrollTop = el.scrollHeight;
+}
+
+function setProgress(p){
+  document.getElementById('progressWrap').style.display='block';
+  document.getElementById('progressBar').style.width = p + '%';
+}
+
+async function run(){
+  if(selectedFiles.length === 0){ alert('請先選擇 PDF 檔案！'); return; }
+
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true;
+  btn.textContent = '處理中…';
+  document.getElementById('log').textContent = '';
+
+  const TOP    = parseFloat(document.getElementById('pTop').value);
+  const BOTTOM = parseFloat(document.getElementById('pBottom').value);
+  const LEFT   = parseFloat(document.getElementById('pLeft').value);
+  const RIGHT  = parseFloat(document.getElementById('pRight').value);
+
+  try {
+    // Step 1: Crop all PDFs
+    log('📋 Step 1: 裁剪 PDF…');
+    const croppedMap = {};  // filename -> Uint8Array (cropped pdf bytes)
+    
+    for(let i=0; i<selectedFiles.length; i++){
+      const file = selectedFiles[i];
+      setProgress((i+1)/selectedFiles.length * 50);
+      log(`  裁剪 ${i+1}/${selectedFiles.length}: ${file.name}`);
+      
+      const buf = await file.arrayBuffer();
+      const srcDoc = await PDFDocument.load(buf);
+      const dstDoc = await PDFDocument.create();
+      
+      const [page] = await dstDoc.copyPages(srcDoc, [0]);
+      
+      // Set CropBox
+      const w = page.getWidth();
+      const h = page.getHeight();
+      const x1 = mm2pt(LEFT);
+      const y1 = mm2pt(BOTTOM);
+      const x2 = w - mm2pt(RIGHT);
+      const y2 = h - mm2pt(TOP);
+      
+      // Set MediaBox to cropped area
+      page.setMediaBox(x1, y1, x2 - x1, y2 - y1);
+      // Also set CropBox
+      page.node.set(PDFName.of('CropBox'), dstDoc.context.obj([x1, y1, x2, y2]));
+      
+      dstDoc.addPage(page);
+      croppedMap[file.name] = await dstDoc.save();
+      await new Promise(r => setTimeout(r, 0)); // yield
+    }
+
+    // Step 2: Group by company code
+    log('\n📋 Step 2: 依公司代碼分組…');
+    const groups = {};
+    for(const [name, bytes] of Object.entries(croppedMap)){
+      const m = name.match(/-(\d{3,6})-/);
+      const code = m ? m[1] : '__unknown__';
+      if(!groups[code]) groups[code]=[];
+      groups[code].push({name, bytes});
+    }
+    const codes = Object.keys(groups).sort();
+    log(`  識別出 ${codes.length} 個公司代碼: ${codes.join(', ')}`);
+
+    // Step 3: Merge each group
+    log('\n📋 Step 3: 合併並打包…');
+    const zip = new JSZip();
+    
+    // Add NEW1 folder (cropped individual files)
+    const new1 = zip.folder('NEW1');
+    for(const [name, bytes] of Object.entries(croppedMap)){
+      new1.file(name, bytes);
+    }
+    
+    // Add NEW2 folder (merged by company code)
+    const new2 = zip.folder('NEW2');
+    let j=0;
+    for(const code of codes){
+      j++;
+      setProgress(50 + j/codes.length * 45);
+      const files = groups[code].sort((a,b)=>a.name.localeCompare(b.name));
+      log(`  合併公司 ${code}: ${files.length} 個檔案 → ${code}.pdf`);
+      
+      const mergedDoc = await PDFDocument.create();
+      for(const {bytes} of files){
+        const srcDoc = await PDFDocument.load(bytes);
+        const pages = await mergedDoc.copyPages(srcDoc, srcDoc.getPageIndices());
+        pages.forEach(p => mergedDoc.addPage(p));
+      }
+      const mergedBytes = await mergedDoc.save();
+      new2.file(`${code}.pdf`, mergedBytes);
+      await new Promise(r => setTimeout(r, 0));
+    }
+
+    // Step 4: Download ZIP
+    log('\n📦 正在打包 ZIP…');
+    setProgress(98);
+    const zipBlob = await zip.generateAsync({type:'blob', compression:'DEFLATE'});
+    const url = URL.createObjectURL(zipBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'PDF處理結果.zip';
+    a.click();
+    setProgress(100);
+    log(`\n✅ 完成！ZIP 已下載`);
+    log(`   NEW1: ${selectedFiles.length} 個裁剪後 PDF`);
+    log(`   NEW2: ${codes.length} 個公司代碼合併 PDF (${codes.join(', ')})`);
+
+  } catch(err){
+    log('❌ 錯誤: ' + err.message);
+    console.error(err);
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶ 開始處理並下載 ZIP';
+}
+</script>
+</body>
+</html>
