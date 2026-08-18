@@ -113,10 +113,12 @@ body { font-family: 'Microsoft JhengHei', 'PingFang TC', Arial, sans-serif; back
   <p>自動辨識文件中的戶名、戶號、證券代號、證件編號，依電投領狀態分類輸出 NEW1 / NEW2</p>
   <div class="site-nav">
     <a href="index.html">📋 紀念品查詢</a>
-    <a href="account.html">👤 帳戶管理</a>
-    <a href="register.html">📝 註冊</a>
-    <a href="rename.html" class="active">📄 批次改名</a>
-    <a href="merge.html">✂️ 截取合併</a>
+    <a href="account.html" class="nav-member">👤 帳戶管理</a>
+    <a href="login.html" id="navLogin">🔐 登入</a>
+    <a href="register.html" class="nav-guest">📝 註冊</a>
+    <a href="rename.html" class="active nav-member">📄 批次改名</a>
+    <a href="merge.html" class="nav-member">✂️ 截取合併</a>
+    <span id="navUser" style="display:none; padding:6px 14px; border-radius:6px; background:rgba(255,255,255,0.2); color:#fff; font-size:0.8rem; font-weight:bold;"></span>
   </div>
 </div>
 
@@ -214,7 +216,11 @@ body { font-family: 'Microsoft JhengHei', 'PingFang TC', Arial, sans-serif; back
 
 </div>
 
+<script src="auth.js"></script>
 <script>
+// ── 受保護頁面：未登入跳轉 ──
+(function() { requireAuth(); })();
+
 // ── PDF.js worker ──────────────────────────────────────────────────────────
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';

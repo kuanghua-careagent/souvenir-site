@@ -57,10 +57,12 @@
 <div class="container">
   <div class="nav">
     <a href="index.html">📋 紀念品查詢</a>
-    <a href="account.html" class="active">👤 帳戶管理</a>
-    <a href="register.html">📝 註冊</a>
-    <a href="rename.html">📄 批次改名</a>
-    <a href="merge.html">✂️ 截取合併</a>
+    <a href="account.html" class="active nav-member">👤 帳戶管理</a>
+    <a href="login.html" id="navLogin">🔐 登入</a>
+    <a href="register.html" class="nav-guest">📝 註冊</a>
+    <a href="rename.html" class="nav-member">📄 批次改名</a>
+    <a href="merge.html" class="nav-member">✂️ 截取合併</a>
+    <span id="navUser" style="display:none; padding:8px 16px; border-radius:8px; background:#22c55e33; color:#4ade80; font-size:0.85rem; font-weight:bold;"></span>
   </div>
 
   <!-- 主帳戶資訊 -->
@@ -154,6 +156,7 @@
   </div>
 </div>
 
+<script src="auth.js"></script>
 <script>
 // ═══════════════════════════════════════════════
 // 會員編碼系統 v1.0 — 帳戶管理
@@ -162,6 +165,12 @@ const USERS_KEY = 'souvenir_users';
 const GROUP_PREFIX = { '興園群': 'L2', '國票群': 'L3', '一般客戶': 'L4' };
 
 let currentUser = null;
+
+// 受保護頁面：未登入跳轉
+(function() {
+  const user = requireAuth();
+  if (user) currentUser = user;
+})();
 
 function loadUsers() {
   try { return JSON.parse(localStorage.getItem(USERS_KEY)) || []; }

@@ -51,13 +51,13 @@
 </div>
 
 <div class="container">
-  <div class="nav">
+  <div class="nav" id="mainNav">
     <a href="index.html" class="active">📋 紀念品查詢</a>
-    <a href="account.html">👤 帳戶管理</a>
+    <a href="account.html" class="nav-member">👤 帳戶管理</a>
     <a href="login.html" id="navLogin">🔐 登入</a>
-    <a href="register.html">📝 註冊</a>
-    <a href="rename.html">📄 批次改名</a>
-    <a href="merge.html">✂️ 截取合併</a>
+    <a href="register.html" class="nav-guest">📝 註冊</a>
+    <a href="rename.html" class="nav-member">📄 批次改名</a>
+    <a href="merge.html" class="nav-member">✂️ 截取合併</a>
     <span id="navUser" style="display:none; padding:8px 16px; border-radius:8px; background:#22c55e33; color:#4ade80; font-size:0.85rem; font-weight:bold;"></span>
   </div>
   <div class="tabs" id="tabs"></div>
@@ -104,6 +104,7 @@
 </div>
 
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<script src="auth.js"></script>
 <script>
 let DB = null;
 let currentTab = 'all';
@@ -112,34 +113,6 @@ let sortDir = 1;
 let currentRows = [];
 // 每頁獨立狀態：tabKey -> {sortKey, sortDir, query}
 const tabStates = {};
-
-// ── 登入狀態（全站） ──
-const SESSION_KEY = 'souvenir_session';
-const USERS_KEY = 'souvenir_users';
-
-function initAuth() {
-  const email = localStorage.getItem(SESSION_KEY);
-  if (!email) return;
-  try {
-    const users = JSON.parse(localStorage.getItem(USERS_KEY)) || [];
-    const user = users.find(u => u.email === email);
-    if (user) {
-      const navUser = document.getElementById('navUser');
-      navUser.style.display = 'inline-block';
-      navUser.textContent = `👤 ${user.name}（${user.certCode || ''}）`;
-      const navLogin = document.getElementById('navLogin');
-      if (navLogin) {
-        navLogin.textContent = '🚪 登出';
-        navLogin.href = 'javascript:logout()';
-      }
-    }
-  } catch(e) {}
-}
-
-function logout() {
-  localStorage.removeItem(SESSION_KEY);
-  window.location.reload();
-}
 
 const TABS = [
   {key: 'all', label: '📋 全部', filter: null},
@@ -150,7 +123,7 @@ const TABS = [
 ];
 
 async function loadData() {
-  initAuth();
+  applyAuthNav();
   try {
     const res = await fetch('souvenir_db.json');
     DB = await res.json();

@@ -42,10 +42,12 @@
 <div class="container">
   <div class="nav">
     <a href="index.html">📋 紀念品查詢</a>
-    <a href="account.html">👤 帳戶管理</a>
-    <a href="register.html">📝 註冊</a>
-    <a href="rename.html">📄 批次改名</a>
-    <a href="merge.html">✂️ 截取合併</a>
+    <a href="account.html" class="nav-member">👤 帳戶管理</a>
+    <a href="login.html" class="active" id="navLogin">🔐 登入</a>
+    <a href="register.html" class="nav-guest">📝 註冊</a>
+    <a href="rename.html" class="nav-member">📄 批次改名</a>
+    <a href="merge.html" class="nav-member">✂️ 截取合併</a>
+    <span id="navUser" style="display:none; padding:8px 16px; border-radius:8px; background:#22c55e33; color:#4ade80; font-size:0.85rem; font-weight:bold;"></span>
   </div>
 
   <!-- 已登入狀態 -->
@@ -77,6 +79,7 @@
   </div>
 </div>
 
+<script src="auth.js"></script>
 <script>
 const USERS_KEY = 'souvenir_users';
 const SESSION_KEY = 'souvenir_session';
